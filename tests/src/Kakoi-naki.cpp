@@ -53,6 +53,17 @@ TEST_CASE("Kakoi-naki")
 	CHECK(bm.background == "tochen.jpg");
 
 	// Timing Points
-
+	CHECK(bm.timing_points.size() == 39);
+	if(bm.timing_points.size() > 1){
+		const auto tm = bm.timing_points[1];
+		CHECK(tm.time.count() == (4221ms).count());
+		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(840.335ms).count());
+		CHECK(tm.meter == 4);
+		CHECK(tm.sample_set == 2);
+		CHECK(tm.sample_index == 1);
+		CHECK(tm.sample_volume == 34);
+		CHECK(!tm.kiai);
+	}
+	
 	// Hitobjects
 }

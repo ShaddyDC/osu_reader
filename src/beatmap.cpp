@@ -178,7 +178,40 @@ bool osu::Beatmap_parser::parse_events(std::string_view line)
 
 bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
 {
-	return true; //Todo: Implement
+	const auto tokens = split(line, ',');
+	if (tokens.size() < 8) return true;
+	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
+
+	const auto parse_i = [&](auto i, auto& v)
+	{
+		std::from_chars(tokens[i].data(), tokens[i].data() + tokens[i].length(), v);
+	};
+
+	Beatmap_file::Timing_point point{};
+	int v0;
+	parse_i(0, v0);
+	point.time = std::chrono::milliseconds{ v0 };
+	float v1;
+	parse_i(1, v1);
+	if(v1 < 0){
+		if(!beatmap_.timing_points.empty()){
+			point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(0.01 * (-v1) * beatmap_.timing_points.back().beat_duration);
+		}
+	}
+	else {
+		using namespace std::chrono_literals;
+		point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(v1 * 1ms);
+	}
+	parse_i(2, point.meter);
+	parse_i(3, point.sample_set);
+	parse_i(4, point.sample_index);
+	parse_i(5, point.sample_volume);
+	if(!tokens[7].empty()){
+		point.kiai = tokens[7][0] == '1';
+	}
+	
+	beatmap_.timing_points.push_back(point);	
+	return true;
 }
 
 bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
@@ -231,7 +264,7 @@ osu::Beatmap_parser::Section osu::Beatmap_parser::parse_section(std::string_view
 	if(line == "[Metadata]") return Section::metadata;
 	if(line == "[Difficulty]") return Section::difficulty;
 	if(line == "[Events]") return Section::events;
-	if(line == "[Timing Points]") return Section::timing_points;
+	if(line == "[TimingPoints]") return Section::timing_points;
 	if(line == "[Colours]") return Section::colours;
 	if(line == "[Hit Objects]") return Section::hitobjects;
 	return Section::none;
