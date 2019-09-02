@@ -25,7 +25,8 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(!bm.letterbox_in_breaks);
 	CHECK(bm.widescreen_storyboard);
 
-	// Todo: Bookmarks	
+	CHECK(bm.bookmarks.size() == 1);
+	if(!bm.bookmarks.empty()) CHECK(bm.bookmarks[0].count() == (53600ms).count());
 	CHECK(bm.distance_spacing == 0.9f);
 	CHECK(bm.beat_divisor == 4);
 	CHECK(bm.grid_size == 32);

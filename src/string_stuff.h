@@ -1,5 +1,6 @@
 #pragma once
 #include <string_view>
+#include <vector>
 
 bool starts_with(std::string_view s, std::string_view prefix);
 
@@ -23,3 +24,5 @@ std::string rtrim_copy(std::string s);
 std::string trim_copy(std::string s);
 
 std::string_view ltrim_view(std::string_view s);
+
+std::vector<std::string_view> split(const std::string_view s, const char delim);

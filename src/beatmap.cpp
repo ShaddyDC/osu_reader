@@ -99,19 +99,30 @@ bool osu::Beatmap_parser::parse_general(const std::string_view line)
 		&& !maybe_parse(line, "UseSkinSprites:", beatmap_.use_skin_sprites);
 }
 
-std::vector<std::chrono::milliseconds> osu::Beatmap_parser::parse_bookmarks(std::string_view data)
+bool osu::Beatmap_parser::maybe_parse_bookmarks(std::string_view line)
 {
-	return {}; //Todo: implement
+	const std::string_view prefix = "Bookmarks:";
+	if (!starts_with(line, prefix)) {
+		return false;
+	}
+	const auto value = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
+	for(const auto token : split(value, ' ')){
+		const auto t = ltrim_view(token);
+		int v = 0;
+		if(const auto ec = std::from_chars(t.data(), t.data() + t.length(), v);
+			ec.ec != std::errc::invalid_argument && ec.ec != std::errc::result_out_of_range){
+			beatmap_.bookmarks.emplace_back(v);
+		}
+	}
+	
+	return true;
 }
 
 bool osu::Beatmap_parser::parse_editor(std::string_view line)
 {
-	if(const std::string_view prefix = "Bookmarks:";
-		starts_with(line, prefix)){
-		beatmap_.bookmarks = parse_bookmarks({line.data() + prefix.length(), line.length() - prefix.length()});
-		return false;
-	}
-	return !maybe_parse(line, "DistanceSpacing:", beatmap_.distance_spacing)
+
+	return !maybe_parse_bookmarks(line)
+		&& !maybe_parse(line, "DistanceSpacing:", beatmap_.distance_spacing)
 		&& !maybe_parse(line, "BeatDivisor:", beatmap_.beat_divisor)
 		&& !maybe_parse(line, "GridSize:", beatmap_.grid_size)
 		&& !maybe_parse(line, "TimelineZoom:", beatmap_.timeline_zoom);

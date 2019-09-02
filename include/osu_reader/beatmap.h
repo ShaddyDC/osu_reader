@@ -26,7 +26,7 @@ namespace osu
 
 		explicit Beatmap_parser(const std::filesystem::path& file);
 		bool parse_general(std::string_view line);
-		std::vector<std::chrono::milliseconds> parse_bookmarks(std::string_view data);
+		bool maybe_parse_bookmarks(std::string_view line);
 		bool parse_editor(std::string_view line);
 		bool parse_metadata(std::string_view line);
 		bool parse_difficulty(std::string_view line);
