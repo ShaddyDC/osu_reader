@@ -154,7 +154,25 @@ bool osu::Beatmap_parser::parse_difficulty(std::string_view line)
 
 bool osu::Beatmap_parser::parse_events(std::string_view line)
 {
-	return true; //Todo: Implement
+	if (const std::string_view bg_prefix = "0,0,\"",	// 0,0,"BG.png",0,0
+		bg_suffix = "\",0,0";
+		starts_with(line, bg_prefix)) {
+		beatmap_.background = std::string{ line.cbegin() + bg_prefix.length(), line.cend() - bg_suffix.length() };
+		return true;
+	}
+	if(const std::string_view break_prefix = "2,";	// 2,start,end
+		starts_with(line, break_prefix)){
+		const std::string_view value_string = { line.data() + break_prefix.length(), line.length() - break_prefix.length() };
+		auto tokens = split(value_string, ',');
+		if (tokens.size() != 2) return true;
+		std::for_each(tokens.begin(), tokens.end(), ltrim_view);
+		int a, b;
+		std::from_chars(tokens[0].data(), tokens[0].data() + tokens[0].length(), a);
+		std::from_chars(tokens[1].data(), tokens[1].data() + tokens[1].length(), b);
+		beatmap_.breaks.emplace_back(a, b);
+		return true;
+	}
+	return false;
 }
 
 

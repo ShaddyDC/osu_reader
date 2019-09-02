@@ -50,8 +50,7 @@ TEST_CASE("Kakoi-naki")
 	CHECK(bm.slider_multiplier == 1.84f);
 	CHECK(bm.slider_tick_rate == 1.f);
 
-	//CHECK(bm.background == "tochen.jpg");
-	// events empty :)
+	CHECK(bm.background == "tochen.jpg");
 
 	// Timing Points
 

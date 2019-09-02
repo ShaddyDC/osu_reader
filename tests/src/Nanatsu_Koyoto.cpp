@@ -51,8 +51,13 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.slider_multiplier == 1.8f);
 	CHECK(bm.slider_tick_rate == 1.f);
 
-	//CHECK(bm.background == "tochen.jpg");
-	// events empty :)
+	CHECK(bm.background == "Loundraw.full.214746799.jpg");
+	CHECK(bm.breaks.size() == 1);
+	if(!bm.breaks.empty()){
+		const auto brk = bm.breaks[0];
+		CHECK(brk.first.count() == (75133ms).count());
+		CHECK(brk.second.count() == (85060ms).count());
+	}
 
 	// Timing Points
 
