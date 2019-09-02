@@ -18,14 +18,10 @@ template<>
 bool maybe_parse<>(std::string_view line, std::string_view prefix, bool& value)
 {
 	if(starts_with(line, prefix)){
-		// ignores beginning whitespace
-		auto it = line.cbegin() + prefix.length();
-		while(it != line.cend() && std::isspace(static_cast<unsigned char>(*it))){
-			++it;
-		}
-		if(it != line.cend()){
-			if(*it == '1') value = true;
-			else if(*it == '0') value = false;
+		const auto value_string = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
+		if(!value_string.empty()){
+			if(value_string[0] == '1') value = true;
+			else if(value_string[0] == '0') value = false;
 		}
 		return true;
 	}
@@ -58,12 +54,7 @@ template<>
 bool maybe_parse<>(std::string_view line, std::string_view prefix, std::string& value)
 {
 	if(starts_with(line, prefix)){
-		auto i = 0;
-		while(line.cbegin() + prefix.length() + i < line.cend()
-			&& std::isspace(static_cast<unsigned char>(*(line.cbegin() + prefix.length() + i)))){
-			++i;
-		}
-		value = std::string{line.cbegin() + prefix.length() + i, line.cend()};
+		value = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
 		return true;
 	}
 	return false;
