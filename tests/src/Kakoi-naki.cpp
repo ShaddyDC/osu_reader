@@ -5,14 +5,14 @@ using namespace std::chrono_literals;
 
 TEST_CASE("Kakoi-naki")
 {
-	const auto bm_e = osu::Beatmap_parser::parse("res/Buta-Otome - Kakoi-naki Yo wa Ichigo no Tsukikage (BarkingMadDog) [this map is so bad cuz overmapping].osu");
+	const auto bm_e = osu::Beatmap_parser::parse(
+		"res/Buta-Otome - Kakoi-naki Yo wa Ichigo no Tsukikage (BarkingMadDog) [this map is so bad cuz overmapping].osu");
 
-	if (!bm_e.has_value())WARN(bm_e.error());
-	
+	if(!bm_e.has_value())
+		WARN(bm_e.error());
+
 	REQUIRE(bm_e.has_value());
 
-
-	
 	const auto& bm = bm_e.value();
 
 	CHECK(bm.version == 14);
@@ -25,8 +25,8 @@ TEST_CASE("Kakoi-naki")
 	CHECK(bm.mode == Gamemode::osu);
 	CHECK(bm.letterbox_in_breaks);
 	CHECK(!bm.widescreen_storyboard);
-	
-	CHECK(bm.distance_spacing == 0.6f);	
+
+	CHECK(bm.distance_spacing == 0.6f);
 	CHECK(bm.beat_divisor == 4);
 	CHECK(bm.grid_size == 4);
 	CHECK(bm.timeline_zoom == 1);
@@ -52,9 +52,8 @@ TEST_CASE("Kakoi-naki")
 
 	//CHECK(bm.background == "tochen.jpg");
 	// events empty :)
-	
+
 	// Timing Points
 
 	// Hitobjects
-	
 }

@@ -65,5 +65,5 @@ std::string_view ltrim_view(const std::string_view s)
 	{
 		return !std::isspace(static_cast<unsigned char>(ch));
 	});
-	return std::string_view{ s.data() + (it - s.begin()), static_cast<std::size_t>(s.end() - it) };
+	return std::string_view{s.data() + (it - s.begin()), static_cast<std::size_t>(s.end() - it)};
 }

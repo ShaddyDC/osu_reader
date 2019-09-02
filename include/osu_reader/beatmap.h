@@ -3,7 +3,8 @@
 #include <fstream>
 #include <tl/expected.hpp>
 
-namespace osu {
+namespace osu
+{
 	class Beatmap_parser
 	{
 	public:
@@ -12,9 +13,17 @@ namespace osu {
 	private:
 		enum class Section
 		{
-			general, editor, metadata, difficulty, events, timing_points, colours, hitobjects, none
+			general,
+			editor,
+			metadata,
+			difficulty,
+			events,
+			timing_points,
+			colours,
+			hitobjects,
+			none
 		};
-		
+
 		explicit Beatmap_parser(const std::filesystem::path& file);
 		bool parse_general(std::string_view line);
 		std::vector<std::chrono::milliseconds> parse_bookmarks(std::string_view data);

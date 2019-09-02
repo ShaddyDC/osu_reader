@@ -12,7 +12,7 @@ namespace osu
 		mania_holdnote = 128
 	};
 
-	
+
 	struct Point
 	{
 		float x, y;
@@ -33,6 +33,7 @@ namespace osu
 			bezier = 'B',
 			catmull = 'C'
 		};
+
 		std::chrono::milliseconds time;
 		Slider_type type;
 		std::vector<Point> points;

@@ -6,8 +6,8 @@
 template<typename Type>
 bool maybe_parse(std::string_view line, std::string_view prefix, Type& value)
 {
-	if(starts_with(line, prefix)) {
-		const auto value_string = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
+	if(starts_with(line, prefix)){
+		const auto value_string = ltrim_view({line.data() + prefix.length(), line.length() - prefix.length()});
 		std::from_chars(value_string.data(), value_string.data() + value_string.length(), value);
 		return true;
 	}
@@ -17,15 +17,15 @@ bool maybe_parse(std::string_view line, std::string_view prefix, Type& value)
 template<>
 bool maybe_parse<>(std::string_view line, std::string_view prefix, bool& value)
 {
-	if (starts_with(line, prefix)) {
+	if(starts_with(line, prefix)){
 		// ignores beginning whitespace
 		auto it = line.cbegin() + prefix.length();
-		while(it != line.cend() && std::isspace(static_cast<unsigned char>(*it))) {
+		while(it != line.cend() && std::isspace(static_cast<unsigned char>(*it))){
 			++it;
 		}
-		if (it != line.cend()) {
-			if (*it == '1') value = true;
-			else if (*it == '0') value = false;
+		if(it != line.cend()){
+			if(*it == '1') value = true;
+			else if(*it == '0') value = false;
 		}
 		return true;
 	}
@@ -37,7 +37,7 @@ bool maybe_parse<>(std::string_view line, std::string_view prefix, std::chrono::
 {
 	auto v = 0;
 	if(maybe_parse(line, prefix, v)){
-		value = std::chrono::milliseconds{ v };
+		value = std::chrono::milliseconds{v};
 		return true;
 	}
 	return false;
@@ -47,7 +47,7 @@ template<>
 bool maybe_parse<>(std::string_view line, std::string_view prefix, Gamemode& value)
 {
 	auto v = 0;
-	if (maybe_parse(line, prefix, v)) {
+	if(maybe_parse(line, prefix, v)){
 		value = static_cast<Gamemode>(value);
 		return true;
 	}
@@ -57,9 +57,9 @@ bool maybe_parse<>(std::string_view line, std::string_view prefix, Gamemode& val
 template<>
 bool maybe_parse<>(std::string_view line, std::string_view prefix, std::string& value)
 {
-	if (starts_with(line, prefix)) {
+	if(starts_with(line, prefix)){
 		auto i = 0;
-		while(line.cbegin() + prefix.length() + i < line.cend() 
+		while(line.cbegin() + prefix.length() + i < line.cend()
 			&& std::isspace(static_cast<unsigned char>(*(line.cbegin() + prefix.length() + i)))){
 			++i;
 		}
@@ -73,7 +73,7 @@ template<>
 bool maybe_parse<>(std::string_view line, std::string_view prefix, std::filesystem::path& value)
 {
 	std::string s;
-	if(maybe_parse(line, prefix, s)) {
+	if(maybe_parse(line, prefix, s)){
 		value = s;
 		return true;
 	}
@@ -82,11 +82,11 @@ bool maybe_parse<>(std::string_view line, std::string_view prefix, std::filesyst
 
 tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse(const std::filesystem::path& file)
 {
-	return Beatmap_parser{ file }.parse_impl();
+	return Beatmap_parser{file}.parse_impl();
 }
 
 osu::Beatmap_parser::Beatmap_parser(const std::filesystem::path& file)
-	: file_{ file }{}
+	: file_{file} {}
 
 bool osu::Beatmap_parser::parse_general(const std::string_view line)
 {
@@ -116,8 +116,8 @@ std::vector<std::chrono::milliseconds> osu::Beatmap_parser::parse_bookmarks(std:
 bool osu::Beatmap_parser::parse_editor(std::string_view line)
 {
 	if(const std::string_view prefix = "Bookmarks:";
-		starts_with(line, prefix)) {
-		beatmap_.bookmarks = parse_bookmarks({ line.data() + prefix.length(), line.length() - prefix.length() });
+		starts_with(line, prefix)){
+		beatmap_.bookmarks = parse_bookmarks({line.data() + prefix.length(), line.length() - prefix.length()});
 		return false;
 	}
 	return !maybe_parse(line, "DistanceSpacing:", beatmap_.distance_spacing)
@@ -152,13 +152,13 @@ bool osu::Beatmap_parser::parse_difficulty(std::string_view line)
 
 bool osu::Beatmap_parser::parse_events(std::string_view line)
 {
-	return true;	//Todo: Implement
+	return true; //Todo: Implement
 }
 
 
 bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
 {
-	return true;	//Todo: Implement
+	return true; //Todo: Implement
 }
 
 bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
@@ -168,35 +168,37 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 
 tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 {
-	if (!file_.is_open()) return tl::make_unexpected("Couldn't open file");
-	
+	if(!file_.is_open()) return tl::make_unexpected("Couldn't open file");
+
 	std::string line;
-	
+
 	const std::string_view version_prefix = "osu file format v";
-	if(!std::getline(file_, line) || !starts_with(ltrim(line), version_prefix)) {
+	if(!std::getline(file_, line) || !starts_with(ltrim(line), version_prefix)){
 		return tl::make_unexpected("Couldn't parse version prefix");
 	}
 
-	std::string_view number = { line.data() + version_prefix.length(),
-		line.length() - version_prefix.length() };
-	if (const auto ec = std::from_chars(number.data(),
-		number.data() + number.length(), beatmap_.version).ec;
-		ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
+	std::string_view number = {
+		line.data() + version_prefix.length(),
+		line.length() - version_prefix.length()
+	};
+	if(const auto ec = std::from_chars(number.data(),
+	                                   number.data() + number.length(), beatmap_.version).ec;
+		ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range){
 		return tl::make_unexpected("Couldn't parse version number");
 	}
-	
-	while(std::getline(file_, line)) {
+
+	while(std::getline(file_, line)){
 		trim(line);
 
-		if (line.length() == 0) continue;
-		if (starts_with(line, "[")) section_ = parse_section(line);
-		else if (section_ == Section::general) parse_general(line);
-		else if (section_ == Section::editor) parse_editor(line);
-		else if (section_ == Section::metadata) parse_metadata(line);
-		else if (section_ == Section::difficulty) parse_difficulty(line);
-		else if (section_ == Section::events) parse_events(line);
-		else if (section_ == Section::timing_points) parse_timing_points(line);
-		else if (section_ == Section::hitobjects) parse_hitobjects(line);
+		if(line.length() == 0) continue;
+		if(starts_with(line, "[")) section_ = parse_section(line);
+		else if(section_ == Section::general) parse_general(line);
+		else if(section_ == Section::editor) parse_editor(line);
+		else if(section_ == Section::metadata) parse_metadata(line);
+		else if(section_ == Section::difficulty) parse_difficulty(line);
+		else if(section_ == Section::events) parse_events(line);
+		else if(section_ == Section::timing_points) parse_timing_points(line);
+		else if(section_ == Section::hitobjects) parse_hitobjects(line);
 	}
 
 	return beatmap_;
@@ -204,13 +206,13 @@ tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 
 osu::Beatmap_parser::Section osu::Beatmap_parser::parse_section(std::string_view line)
 {
-	if (line == "[General]") return Section::general;
-	if (line == "[Editor]") return Section::editor;
-	if (line == "[Metadata]") return Section::metadata;
-	if (line == "[Difficulty]") return Section::difficulty;
-	if (line == "[Events]") return Section::events;
-	if (line == "[Timing Points]") return Section::timing_points;
-	if (line == "[Colours]") return Section::colours;
-	if (line == "[Hit Objects]") return Section::hitobjects;
+	if(line == "[General]") return Section::general;
+	if(line == "[Editor]") return Section::editor;
+	if(line == "[Metadata]") return Section::metadata;
+	if(line == "[Difficulty]") return Section::difficulty;
+	if(line == "[Events]") return Section::events;
+	if(line == "[Timing Points]") return Section::timing_points;
+	if(line == "[Colours]") return Section::colours;
+	if(line == "[Hit Objects]") return Section::hitobjects;
 	return Section::none;
 }

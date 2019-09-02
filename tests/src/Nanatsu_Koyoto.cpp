@@ -7,12 +7,11 @@ TEST_CASE("Nanatsu Koyoto")
 {
 	const auto bm_e = osu::Beatmap_parser::parse("res/A.SAKA - Nanatsu Koyoto (ailv) [Extra].osu");
 
-	if (!bm_e.has_value())WARN(bm_e.error());
-	
+	if(!bm_e.has_value())
+		WARN(bm_e.error());
+
 	REQUIRE(bm_e.has_value());
 
-
-	
 	const auto& bm = bm_e.value();
 
 	CHECK(bm.version == 14);
@@ -27,7 +26,7 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.widescreen_storyboard);
 
 	// Todo: Bookmarks	
-	CHECK(bm.distance_spacing == 0.9f);	
+	CHECK(bm.distance_spacing == 0.9f);
 	CHECK(bm.beat_divisor == 4);
 	CHECK(bm.grid_size == 32);
 	CHECK(bm.timeline_zoom == 1.4f);
@@ -53,9 +52,8 @@ TEST_CASE("Nanatsu Koyoto")
 
 	//CHECK(bm.background == "tochen.jpg");
 	// events empty :)
-	
+
 	// Timing Points
 
 	// Hitobjects
-	
 }

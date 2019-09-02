@@ -12,7 +12,6 @@ namespace osu
 {
 	struct Beatmap_file
 	{
-
 		struct Timing_point
 		{
 			std::chrono::milliseconds time;
@@ -23,7 +22,7 @@ namespace osu
 			int sample_volume;
 			bool kiai;
 		};
-			   		 		
+
 		int version;
 
 		// General
@@ -81,6 +80,5 @@ namespace osu
 		std::vector<Hitcircle> circles;
 		std::vector<Slider> sliders;
 		std::vector<Spinner> spinners;
-		
 	};
 }
