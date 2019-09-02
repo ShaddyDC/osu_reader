@@ -7,8 +7,7 @@ template<typename Type>
 bool maybe_parse(std::string_view line, std::string_view prefix, Type& value)
 {
 	if(starts_with(line, prefix)) {
-		// ignores beginning whitespace
-		std::string_view value_string = { line.data() + prefix.length(), line.length() - prefix.length() };
+		const auto value_string = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
 		std::from_chars(value_string.data(), value_string.data() + value_string.length(), value);
 		return true;
 	}

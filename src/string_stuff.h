@@ -21,3 +21,5 @@ std::string rtrim_copy(std::string s);
 
 // trim from both ends (copying)
 std::string trim_copy(std::string s);
+
+std::string_view ltrim_view(std::string_view s);

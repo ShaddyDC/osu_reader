@@ -58,3 +58,12 @@ std::string trim_copy(std::string s)
 	trim(s);
 	return s;
 }
+
+std::string_view ltrim_view(const std::string_view s)
+{
+	const auto it = std::find_if(s.begin(), s.end(), [](int ch)
+	{
+		return !std::isspace(static_cast<unsigned char>(ch));
+	});
+	return std::string_view{ s.data() + (it - s.begin()), static_cast<std::size_t>(s.end() - it) };
+}
