@@ -217,7 +217,67 @@ bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
 
 bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 {
-	return true; //Todo: Implement
+	const auto tokens = split(line, ',');
+	if(tokens.size() < 4) return true;
+	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
+
+	const auto parse_i = [&](auto i, auto& v)
+	{
+		std::from_chars(tokens[i].data(), tokens[i].data() + tokens[i].length(), v);
+	};
+
+	auto type = 0;
+	parse_i(3, type);
+	if(type & static_cast<int>(Hitobject_type::circle)){
+		Hitcircle circle{};
+		parse_i(0, circle.pos.x);
+		parse_i(1, circle.pos.y);
+		auto time = 0;
+		parse_i(2, time);
+		circle.time = std::chrono::milliseconds{ time };
+		beatmap_.circles.push_back(circle);
+	} else if(type & static_cast<int>(Hitobject_type::slider)){
+		if(tokens.size() < 8) return true;
+		Slider slider{};
+		Point point{};
+		parse_i(0, point.x);
+		parse_i(1, point.y);
+		slider.points.push_back(point);
+		auto time = 0;
+		parse_i(2, time);
+		slider.time = std::chrono::milliseconds{ time };
+		parse_i(6, slider.repeat);
+		parse_i(7, slider.length);
+
+		const auto sub_tokens = split(tokens[5], '|');
+		if(sub_tokens.size() < 2) return true;
+		std::for_each(sub_tokens.begin(), sub_tokens.end(), ltrim_view);
+		if(sub_tokens[0].empty() || sub_tokens[0][0] != static_cast<char>(Slider::Slider_type::linear) && sub_tokens[0][
+			0] != static_cast<char>(Slider::Slider_type::perfect) && sub_tokens[0][0] != static_cast<char>(Slider::
+			Slider_type::bezier) && sub_tokens[0][0] != static_cast<char>(Slider::Slider_type::catmull))
+			return true;
+		slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
+		for(auto it = sub_tokens.cbegin() + 1; it != sub_tokens.cend(); ++it){
+			point          = Point{};
+			const auto res = std::from_chars(it->data(), it->data() + it->length(), point.x);
+			if(res.ptr == it->data() + it->length() || res.ptr + 1 == it->data() + it->length()) continue;
+			std::from_chars(res.ptr + 1, it->data() + it->length(), point.y);
+			slider.points.push_back(point);
+		}
+		beatmap_.sliders.push_back(slider);
+
+	} else if(type & static_cast<int>(Hitobject_type::spinner)){
+		if(tokens.size() < 6) return true;
+		Spinner spinner{};
+		auto time = 0;
+		parse_i(2, time);
+		spinner.start = std::chrono::milliseconds{ time };
+		parse_i(5, time);
+		spinner.end = std::chrono::milliseconds{ time };
+		beatmap_.spinners.push_back(spinner);
+	}
+
+	return true;
 }
 
 tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
@@ -267,6 +327,6 @@ osu::Beatmap_parser::Section osu::Beatmap_parser::parse_section(std::string_view
 	if(line == "[Events]") return Section::events;
 	if(line == "[TimingPoints]") return Section::timing_points;
 	if(line == "[Colours]") return Section::colours;
-	if(line == "[Hit Objects]") return Section::hitobjects;
+	if(line == "[HitObjects]") return Section::hitobjects;
 	return Section::none;
 }

@@ -60,6 +60,7 @@ TEST_CASE("Nanatsu Koyoto")
 		CHECK(brk.second.count() == (85060ms).count());
 	}
 
+	// Timing Points
 	CHECK(bm.timing_points.size() == 11);
 	if(bm.timing_points.size() > 1){
 		const auto tm = bm.timing_points[1];
@@ -72,7 +73,31 @@ TEST_CASE("Nanatsu Koyoto")
 		CHECK(tm.sample_volume == 90);
 		CHECK(tm.kiai);
 	}
-	// Timing Points
 
 	// Hitobjects
+	CHECK(bm.sliders.size() + bm.spinners.size() + bm.circles.size() == 403);
+	if(!bm.circles.empty()){
+		const auto c = bm.circles.front();
+		CHECK(c.pos.x == 104.f);
+		CHECK(c.pos.y == 132.f);
+		CHECK(c.time.count() == (267ms).count());
+	}
+
+	if(!bm.sliders.empty()){
+		//290,197,10933,6,0,P|242:197|170:205,1,90,0|0,0:0|0:0,0:0:0:0:
+		const auto s = bm.sliders.front();
+		CHECK(s.time.count() == (10933ms).count());
+		CHECK(s.type == osu::Slider::Slider_type::perfect);
+		CHECK(s.repeat == 1);
+		CHECK(s.length == 90.f);
+		CHECK(s.points.size() == 3);
+		if(s.points.size() > 3){
+			CHECK(s.points[0].x == 290.f);
+			CHECK(s.points[0].y == 197.f);
+			CHECK(s.points[1].x == 242.f);
+			CHECK(s.points[1].y == 197.f);
+			CHECK(s.points[2].x == 170.f);
+			CHECK(s.points[2].y == 205.f);
+		}
+	}
 }
