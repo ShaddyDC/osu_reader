@@ -1,10 +1,8 @@
 #pragma once
 #include <vector>
 
-namespace osu
-{
-	enum class Hitobject_type : uint_fast8_t
-	{
+namespace osu{
+	enum class Hitobject_type : uint_fast8_t{
 		circle = 1,
 		slider = 2,
 		new_combo = 4,
@@ -13,21 +11,17 @@ namespace osu
 	};
 
 
-	struct Point
-	{
+	struct Point{
 		float x, y;
 	};
 
-	struct Hitcircle
-	{
+	struct Hitcircle{
 		Point pos;
 		std::chrono::milliseconds time;
 	};
 
-	struct Slider
-	{
-		enum class Slider_type : char
-		{
+	struct Slider{
+		enum class Slider_type : char{
 			linear = 'L',
 			perfect = 'P',
 			bezier = 'B',
@@ -42,8 +36,7 @@ namespace osu
 		std::chrono::milliseconds duration;
 	};
 
-	struct Spinner
-	{
+	struct Spinner{
 		std::chrono::milliseconds start;
 		std::chrono::milliseconds end;
 	};

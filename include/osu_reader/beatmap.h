@@ -3,16 +3,13 @@
 #include <fstream>
 #include <tl/expected.hpp>
 
-namespace osu
-{
-	class Beatmap_parser
-	{
+namespace osu{
+	class Beatmap_parser{
 	public:
 		static tl::expected<Beatmap_file, std::string> parse(const std::filesystem::path& file);
 
 	private:
-		enum class Section
-		{
+		enum class Section{
 			general,
 			editor,
 			metadata,
@@ -38,6 +35,6 @@ namespace osu
 
 		std::ifstream file_;
 		Beatmap_file beatmap_ = {};
-		Section section_ = Section::none;
+		Section section_      = Section::none;
 	};
 }

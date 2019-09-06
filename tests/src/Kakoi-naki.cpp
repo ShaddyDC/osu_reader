@@ -64,6 +64,6 @@ TEST_CASE("Kakoi-naki")
 		CHECK(tm.sample_volume == 34);
 		CHECK(!tm.kiai);
 	}
-	
+
 	// Hitobjects
 }

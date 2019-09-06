@@ -4,16 +4,12 @@
 #include <vector>
 #include <filesystem>
 #include <cstdint>
-#include <optional>
 #include "gamemode.h"
 #include "hitobject.h"
 
-namespace osu
-{
-	struct Beatmap_file
-	{
-		struct Timing_point
-		{
+namespace osu{
+	struct Beatmap_file{
+		struct Timing_point{
 			std::chrono::milliseconds time;
 			std::chrono::microseconds beat_duration;
 			int meter;
@@ -67,7 +63,7 @@ namespace osu
 		float od;
 		float ar;
 		float slider_multiplier = 1.4f;
-		float slider_tick_rate = 1.f;
+		float slider_tick_rate  = 1.f;
 
 		// Events
 		std::filesystem::path background;

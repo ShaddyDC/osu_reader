@@ -26,7 +26,8 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.widescreen_storyboard);
 
 	CHECK(bm.bookmarks.size() == 1);
-	if(!bm.bookmarks.empty()) CHECK(bm.bookmarks[0].count() == (53600ms).count());
+	if(!bm.bookmarks.empty())
+		CHECK(bm.bookmarks[0].count() == (53600ms).count());
 	CHECK(bm.distance_spacing == 0.9f);
 	CHECK(bm.beat_divisor == 4);
 	CHECK(bm.grid_size == 32);
@@ -38,7 +39,7 @@ TEST_CASE("Nanatsu Koyoto")
 	//CHECK(bm.artist_unicode == "");
 	CHECK(bm.creator == "ailv");
 	CHECK(bm.difficulty_name == "Extra");
-	CHECK(bm.source == "");
+	CHECK(bm.source.empty());
 	// tags: contain unicode :(
 	//CHECK(bm.tags == );	
 	CHECK(bm.beatmap_id == 1619968);
@@ -63,7 +64,8 @@ TEST_CASE("Nanatsu Koyoto")
 	if(bm.timing_points.size() > 1){
 		const auto tm = bm.timing_points[1];
 		CHECK(tm.time.count() == (21600ms).count());
-		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(277.777777777777ms).count());
+		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(277.777777777777ms).
+			count());
 		CHECK(tm.meter == 4);
 		CHECK(tm.sample_set == 2);
 		CHECK(tm.sample_index == 1);

@@ -65,7 +65,7 @@ std::string_view ltrim_view(const std::string_view s)
 	{
 		return !std::isspace(static_cast<unsigned char>(ch));
 	});
-	return std::string_view{s.data() + (it - s.begin()), static_cast<std::size_t>(s.end() - it)};
+	return std::string_view{ s.data() + (it - s.begin()), static_cast<std::size_t>(s.end() - it) };
 }
 
 std::vector<std::string_view> split(const std::string_view s, const char delim)
@@ -75,11 +75,11 @@ std::vector<std::string_view> split(const std::string_view s, const char delim)
 
 	const auto add_if_not_zero = [&]
 	{
-		if (it != it_start) {
+		if(it != it_start){
 			ret.emplace_back(s.data() + (it_start - s.begin()), it - it_start);
 		}
 	};
-	
+
 	for(; it != s.end(); ++it){
 		if(*it == delim){
 			add_if_not_zero();
