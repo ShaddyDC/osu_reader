@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <chrono>
 
 namespace osu{
 	enum class Hitobject_type : uint_fast8_t{

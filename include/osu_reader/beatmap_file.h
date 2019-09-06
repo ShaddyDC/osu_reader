@@ -1,11 +1,12 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <filesystem>
-#include <cstdint>
 #include "gamemode.h"
 #include "hitobject.h"
+#include <cstdint>
+#include <filesystem>
+#include <string>
+#include <vector>
+
 
 namespace osu{
 	struct Beatmap_file{
