@@ -252,10 +252,20 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		const auto sub_tokens = split(tokens[5], '|');
 		if(sub_tokens.size() < 2) return true;
 		std::for_each(sub_tokens.begin(), sub_tokens.end(), ltrim_view);
-		if(sub_tokens[0].empty() || sub_tokens[0][0] != static_cast<char>(Slider::Slider_type::linear) && sub_tokens[0][
-			0] != static_cast<char>(Slider::Slider_type::perfect) && sub_tokens[0][0] != static_cast<char>(Slider::
-			Slider_type::bezier) && sub_tokens[0][0] != static_cast<char>(Slider::Slider_type::catmull))
-			return true;
+
+		const auto valid_slider_type = [&](const char slider_type)
+		{
+			const std::vector<Slider::Slider_type> slider_types{
+				Slider::Slider_type::linear, Slider::Slider_type::perfect,
+				Slider::Slider_type::bezier, Slider::Slider_type::catmull
+			};
+			return std::any_of(slider_types.cbegin(), slider_types.cend(), [&](auto e)
+				{
+					return slider_type == static_cast<char>(e);
+				});
+		};
+		if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return true;
+		
 		slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
 		for(auto it = sub_tokens.cbegin() + 1; it != sub_tokens.cend(); ++it){
 			point          = Point{};
