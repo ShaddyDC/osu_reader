@@ -195,8 +195,9 @@ bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	float v1;
 	parse_i(1, v1);
 	if(v1 < 0){
-		point.inheritable = false;
-		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(), beatmap_.timing_points.crend(), [](auto p) { return p.inheritable; });
+		point.inheritable           = false;
+		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(), beatmap_.timing_points.crend(),
+		                                           [](auto p) { return p.inheritable; });
 		if(last_uninherited != beatmap_.timing_points.crend()){
 			point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(
 				0.01f * (-v1) * last_uninherited->beat_duration);
@@ -263,14 +264,15 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 				Slider::Slider_type::bezier, Slider::Slider_type::catmull
 			};
 			return std::any_of(slider_types.cbegin(), slider_types.cend(), [&](auto e)
-				{
-					return slider_type == static_cast<char>(e);
-				});
+			{
+				return slider_type == static_cast<char>(e);
+			});
 		};
 		if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return true;
-		
+
 		slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
-		std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points),[](auto t) {
+		std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points), [](auto t)
+		{
 			Point point{};
 			const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
 			std::from_chars(pos + 1, t.data() + t.length(), point.y);
