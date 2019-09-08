@@ -270,13 +270,12 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return true;
 		
 		slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
-		for(auto it = sub_tokens.cbegin() + 1; it != sub_tokens.cend(); ++it){
-			point          = Point{};
-			const auto res = std::from_chars(it->data(), it->data() + it->length(), point.x);
-			if(res.ptr == it->data() + it->length() || res.ptr + 1 == it->data() + it->length()) continue;
-			std::from_chars(res.ptr + 1, it->data() + it->length(), point.y);
-			slider.points.push_back(point);
-		}
+		std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points),[](auto t) {
+			Point point{};
+			const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
+			std::from_chars(pos + 1, t.data() + t.length(), point.y);
+			return point;
+		});
 		beatmap_.sliders.push_back(slider);
 
 	} else if(type & static_cast<int>(Hitobject_type::spinner)){
