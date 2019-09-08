@@ -62,7 +62,19 @@ TEST_CASE("Nanatsu Koyoto")
 
 	// Timing Points
 	CHECK(bm.timing_points.size() == 11);
-	if(bm.timing_points.size() > 1){
+	if (!bm.timing_points.empty()) {
+		const auto tm = bm.timing_points[0];
+		CHECK(tm.time.count() == (267ms).count());
+		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
+			count());
+		CHECK(tm.meter == 4);
+		CHECK(tm.sample_set == 2);
+		CHECK(tm.sample_index == 1);
+		CHECK(tm.sample_volume == 90);
+		CHECK(tm.inheritable);
+		CHECK(!tm.kiai);
+	}
+	if(bm.timing_points.size() >= 2){
 		const auto tm = bm.timing_points[1];
 		CHECK(tm.time.count() == (21600ms).count());
 		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(277.777777777777ms).
@@ -71,9 +83,21 @@ TEST_CASE("Nanatsu Koyoto")
 		CHECK(tm.sample_set == 2);
 		CHECK(tm.sample_index == 1);
 		CHECK(tm.sample_volume == 90);
+		CHECK(!tm.inheritable);
 		CHECK(tm.kiai);
 	}
-
+	if (bm.timing_points.size() >= 3) {	
+		const auto tm = bm.timing_points[2];
+		CHECK(tm.time.count() == (43266ms).count());
+		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
+			count());
+		CHECK(tm.meter == 4);
+		CHECK(tm.sample_set == 2);
+		CHECK(tm.sample_index == 1);
+		CHECK(tm.sample_volume == 90);
+		CHECK(!tm.inheritable);
+		CHECK(!tm.kiai);
+	}
 	// Hitobjects
 	CHECK(bm.sliders.size() + bm.spinners.size() + bm.circles.size() == 403);
 	if(!bm.circles.empty()){

@@ -17,6 +17,7 @@ namespace osu{
 			int sample_set;
 			int sample_index;
 			int sample_volume;
+			bool inheritable;
 			bool kiai;
 		};
 

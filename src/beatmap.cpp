@@ -195,11 +195,14 @@ bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	float v1;
 	parse_i(1, v1);
 	if(v1 < 0){
-		if(!beatmap_.timing_points.empty()){
+		point.inheritable = false;
+		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(), beatmap_.timing_points.crend(), [](auto p) { return p.inheritable; });
+		if(last_uninherited != beatmap_.timing_points.crend()){
 			point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(
-				0.01 * (-v1) * beatmap_.timing_points.back().beat_duration);
+				0.01f * (-v1) * last_uninherited->beat_duration);
 		}
 	} else{
+		point.inheritable = true;
 		using namespace std::chrono_literals;
 		point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(v1 * 1ms);
 	}
