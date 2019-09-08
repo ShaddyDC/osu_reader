@@ -5,6 +5,7 @@ add_executable(osuReaderTests src/main.cpp
 	src/Kakoi-naki.cpp
 	src/Nanatsu_Koyoto.cpp
 	src/no_beatmap.cpp
+	src/parse_all.cpp
 )
 
 target_link_libraries(osuReaderTests
