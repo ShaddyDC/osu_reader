@@ -1,6 +1,7 @@
 #include "osu_reader/beatmap.h"
 #include "string_stuff.h"
 #include <charconv>
+#include "util.h"
 
 template<typename Type>
 bool maybe_parse(std::string_view line, std::string_view prefix, Type& value)
@@ -291,47 +292,72 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 	return true;
 }
 
+bool osu::Beatmap_parser::maybe_parse_utfheader()
+{
+	std::vector<char> header;
+	std::generate_n(std::back_inserter(header), 4, [this] { return static_cast<char>(file_.get()); });
+
+	using namespace util;
+
+	const std::vector<std::vector<char>> potential_ge_utf16_headers{
+		{ 0x00_ch, 0x00, 0xFE_ch, 0xFF_ch },    // utf32 BE
+		{ 0xFF_ch, 0xFE_ch, 0x00_ch, 0x00_ch }, // utf32 LE
+		{ 0xFE_ch, 0xFF_ch },                   // utf16 BE
+		{ 0xFF_ch, 0xFE_ch },                   // utf16 LE
+	};
+
+	const auto matches_header = [&header](const auto& e)
+	{
+		return std::equal(e.cbegin(), e.cend(), header.cbegin());
+	};
+
+	if(const auto matching_header = std::find_if(potential_ge_utf16_headers.cbegin(), potential_ge_utf16_headers.cend(),
+	                                             matches_header);
+		matching_header != potential_ge_utf16_headers.cend()){
+		if(matching_header->size() < header.size()) file_.seekg(matching_header->size());
+		return true;
+	}
+
+	const std::vector<char> utf8_header{ 0xFF_ch, 0xBB_ch, 0xBF_ch };
+	if(const auto is_utf8 = std::equal(utf8_header.cbegin(), utf8_header.cend(), header.cbegin());
+		is_utf8){
+		file_.seekg(utf8_header.size());
+		return false;
+	}
+	file_.seekg(0);
+	return false;
+}
+
 tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 {
 	if(!file_.is_open()) return tl::make_unexpected("Couldn't open file");
 
-	char a = file_.get();
-	char b = file_.get();
-	char c = file_.get();
-	char d = file_.get();
-
-	const auto utf_ge_16 = a == static_cast<char>(0xFF) && b == static_cast<char>(0xFE) || a == static_cast<char>(0xFE) && b == static_cast<char>(0xFF)
-	|| a == static_cast<char>(0x00) && b == static_cast<char>(0x00) && c == static_cast<char>(0xFE) && d == static_cast<char>(0xFF);
-	if (!utf_ge_16) file_.seekg(0);
-
-	if(utf_ge_16 && (!(c == (char)0x00 && d == (char)0x00) || !(c == static_cast<char>(0xFE) && d == static_cast<char>(0xFF)))){
-		file_.seekg(2);
-	}
-
-	const auto format_utf16 = [utf_ge_16](std::string& s)
-	{
-		if(utf_ge_16)
-			s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
-	};
+	using String_mod_fn = void(std::string&);
+	const auto format_utf16 = maybe_parse_utfheader()
+		                          ? static_cast<String_mod_fn*>([](std::string& s)
+		                          {
+			                          s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
+		                          })
+		                          : static_cast<String_mod_fn*>([](std::string&) {});
 
 	using namespace std::string_literals;
 	std::string line;
 	const std::string_view version_prefix = "osu file format v";
 	size_t prefix_pos;
-	do {
-		if (!std::getline(file_, line)) {
+	do{
+		if(!std::getline(file_, line)){
 			return tl::make_unexpected("Couldn't read first line or find version");
 		}
 
 		format_utf16(line);
 		prefix_pos = line.find(version_prefix);
-	} while (prefix_pos == std::string::npos);
+	} while(prefix_pos == std::string::npos);
 
 	const std::string_view number = {
 		line.data() + prefix_pos + version_prefix.length(),
 		line.length() - version_prefix.length()
 	};
-	
+
 	if(const auto ec = std::from_chars(number.data(),
 	                                   number.data() + number.length(), beatmap_.version).ec;
 		ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range){

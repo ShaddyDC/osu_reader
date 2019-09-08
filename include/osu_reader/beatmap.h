@@ -30,6 +30,7 @@ namespace osu{
 		bool parse_events(std::string_view line);
 		bool parse_timing_points(std::string_view line);
 		bool parse_hitobjects(std::string_view line);
+		bool maybe_parse_utfheader();
 		tl::expected<Beatmap_file, std::string> parse_impl();
 		static Section parse_section(std::string_view line);
 
