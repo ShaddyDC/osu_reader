@@ -4,6 +4,7 @@ find_package(Catch2 REQUIRED)
 add_executable(osuReaderTests src/main.cpp
 	src/Kakoi-naki.cpp
 	src/Nanatsu_Koyoto.cpp
+	src/no_beatmap.cpp
 )
 
 target_link_libraries(osuReaderTests
