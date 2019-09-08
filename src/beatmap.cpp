@@ -342,28 +342,36 @@ tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 		                          })
 		                          : static_cast<String_mod_fn*>([](std::string&) {});
 
-	using namespace std::string_literals;
 	std::string line;
 	const std::string_view version_prefix = "osu file format v";
-	size_t prefix_pos;
-	do{
-		if(!std::getline(file_, line)){
-			return tl::make_unexpected("Couldn't read first line or find version");
+
+	const auto seek_version_string = [&]
+	{
+		while (std::getline(file_, line)) {
+			format_utf16(line);
+			if (const auto pos = line.find(version_prefix);
+				pos != std::string::npos) {
+				return pos;
+			}
 		}
-
-		format_utf16(line);
-		prefix_pos = line.find(version_prefix);
-	} while(prefix_pos == std::string::npos);
-
-	const std::string_view number = {
-		line.data() + prefix_pos + version_prefix.length(),
-		line.length() - version_prefix.length()
+		return std::string::npos;
 	};
+	
+	if(const auto prefix_pos = seek_version_string();
+		prefix_pos == std::string::npos){
+		return tl::make_unexpected("Couldn't read first line or find version");
+	}
+	else {
+		const std::string_view number_string = {
+			line.data() + prefix_pos + version_prefix.length(),
+			line.length() - version_prefix.length() - prefix_pos
+		};
 
-	if(const auto ec = std::from_chars(number.data(),
-	                                   number.data() + number.length(), beatmap_.version).ec;
-		ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range){
-		return tl::make_unexpected("Couldn't parse version number");
+		if (const auto ec = std::from_chars(number_string.data(),
+			number_string.data() + number_string.length(), beatmap_.version).ec;
+			ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
+			return tl::make_unexpected("Couldn't parse version number");
+		}
 	}
 
 	while(std::getline(file_, line)){
