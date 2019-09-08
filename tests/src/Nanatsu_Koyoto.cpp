@@ -26,7 +26,7 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.widescreen_storyboard);
 
 	CHECK(bm.bookmarks.size() == 1);
-	if(!bm.bookmarks.empty())
+	CHECKED_IF(!bm.bookmarks.empty())
 		CHECK(bm.bookmarks[0].count() == (53600ms).count());
 	CHECK(bm.distance_spacing == 0.9f);
 	CHECK(bm.beat_divisor == 4);
@@ -53,61 +53,62 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.slider_tick_rate == 1.f);
 
 	CHECK(bm.background == "Loundraw.full.214746799.jpg");
-	CHECK(bm.breaks.size() == 1);
-	if(!bm.breaks.empty()){
+	CHECKED_IF(bm.breaks.size() == 1){
 		const auto brk = bm.breaks[0];
 		CHECK(brk.first.count() == (75133ms).count());
 		CHECK(brk.second.count() == (85060ms).count());
 	}
 
 	// Timing Points
-	CHECK(bm.timing_points.size() == 11);
-	if (!bm.timing_points.empty()) {
-		const auto tm = bm.timing_points[0];
-		CHECK(tm.time.count() == (267ms).count());
-		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
-			count());
-		CHECK(tm.meter == 4);
-		CHECK(tm.sample_set == 2);
-		CHECK(tm.sample_index == 1);
-		CHECK(tm.sample_volume == 90);
-		CHECK(tm.inheritable);
-		CHECK(!tm.kiai);
+	CHECKED_IF(bm.timing_points.size() == 11){
+		{
+			const auto tm = bm.timing_points[0];
+			CHECK(tm.time.count() == (267ms).count());
+			CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
+				count());
+			CHECK(tm.meter == 4);
+			CHECK(tm.sample_set == 2);
+			CHECK(tm.sample_index == 1);
+			CHECK(tm.sample_volume == 90);
+			CHECK(tm.inheritable);
+			CHECK(!tm.kiai);
+		}
+		{
+			const auto tm = bm.timing_points[1];
+			CHECK(tm.time.count() == (21600ms).count());
+			CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(277.777777777777ms).
+				count());
+			CHECK(tm.meter == 4);
+			CHECK(tm.sample_set == 2);
+			CHECK(tm.sample_index == 1);
+			CHECK(tm.sample_volume == 90);
+			CHECK(!tm.inheritable);
+			CHECK(tm.kiai);
+		}
+		{
+			const auto tm = bm.timing_points[2];
+			CHECK(tm.time.count() == (43266ms).count());
+			CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
+				count());
+			CHECK(tm.meter == 4);
+			CHECK(tm.sample_set == 2);
+			CHECK(tm.sample_index == 1);
+			CHECK(tm.sample_volume == 90);
+			CHECK(!tm.inheritable);
+			CHECK(!tm.kiai);
+		}
 	}
-	if(bm.timing_points.size() >= 2){
-		const auto tm = bm.timing_points[1];
-		CHECK(tm.time.count() == (21600ms).count());
-		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(277.777777777777ms).
-			count());
-		CHECK(tm.meter == 4);
-		CHECK(tm.sample_set == 2);
-		CHECK(tm.sample_index == 1);
-		CHECK(tm.sample_volume == 90);
-		CHECK(!tm.inheritable);
-		CHECK(tm.kiai);
-	}
-	if (bm.timing_points.size() >= 3) {	
-		const auto tm = bm.timing_points[2];
-		CHECK(tm.time.count() == (43266ms).count());
-		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
-			count());
-		CHECK(tm.meter == 4);
-		CHECK(tm.sample_set == 2);
-		CHECK(tm.sample_index == 1);
-		CHECK(tm.sample_volume == 90);
-		CHECK(!tm.inheritable);
-		CHECK(!tm.kiai);
-	}
+
 	// Hitobjects
 	CHECK(bm.sliders.size() + bm.spinners.size() + bm.circles.size() == 403);
-	if(!bm.circles.empty()){
+	CHECKED_IF(!bm.circles.empty()){
 		const auto c = bm.circles.front();
 		CHECK(c.pos.x == 104.f);
 		CHECK(c.pos.y == 132.f);
 		CHECK(c.time.count() == (267ms).count());
 	}
 
-	if(!bm.sliders.empty()){
+	CHECKED_IF(!bm.sliders.empty()){
 		//290,197,10933,6,0,P|242:197|170:205,1,90,0|0,0:0|0:0,0:0:0:0:
 		const auto s = bm.sliders.front();
 		CHECK(s.time.count() == (10933ms).count());

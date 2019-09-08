@@ -54,7 +54,7 @@ TEST_CASE("Kakoi-naki")
 
 	// Timing Points
 	CHECK(bm.timing_points.size() == 39);
-	if(bm.timing_points.size() > 1){
+	CHECKED_IF(bm.timing_points.size() > 1){
 		const auto tm = bm.timing_points[1];
 		CHECK(tm.time.count() == (4221ms).count());
 		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(840.335ms).count());
@@ -67,21 +67,20 @@ TEST_CASE("Kakoi-naki")
 
 	// Hitobjects
 	CHECK(bm.sliders.size() + bm.spinners.size() + bm.circles.size() == 912);
-	if(bm.circles.size() >= 2){
+	CHECKED_IF(bm.circles.size() >= 2){
 		const auto c = bm.circles[1];
 		CHECK(c.pos.x == 312.f);
 		CHECK(c.pos.y == 260.f);
 		CHECK(c.time.count() == (2162ms).count());
 	}
 
-	if(!bm.sliders.empty()){
+	CHECKED_IF(!bm.sliders.empty()){
 		const auto s = bm.sliders.front();
 		CHECK(s.time.count() == (4221ms).count());
 		CHECK(s.type == osu::Slider::Slider_type::perfect);
 		CHECK(s.repeat == 2);
 		CHECK(s.length == 96.599997052002f);
-		CHECK(s.points.size() == 3);
-		if(s.points.size() > 3){
+		CHECKED_IF(s.points.size() == 3){
 			CHECK(s.points[0].x == 260.f);
 			CHECK(s.points[0].y == 236.f);
 			CHECK(s.points[1].x == 252.f);
@@ -91,7 +90,7 @@ TEST_CASE("Kakoi-naki")
 		}
 	}
 
-	if(!bm.spinners.empty()){
+	CHECKED_IF(!bm.spinners.empty()){
 		const auto s = bm.spinners.back();
 		CHECK(s.start.count() == (176099ms).count());
 		CHECK(s.end.count() == (181244ms).count());
