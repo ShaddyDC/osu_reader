@@ -2,7 +2,6 @@
 #include "string_stuff.h"
 #include <charconv>
 
-
 template<typename Type>
 bool maybe_parse(std::string_view line, std::string_view prefix, Type& value)
 {
@@ -296,17 +295,43 @@ tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 {
 	if(!file_.is_open()) return tl::make_unexpected("Couldn't open file");
 
-	std::string line;
+	char a = file_.get();
+	char b = file_.get();
+	char c = file_.get();
+	char d = file_.get();
 
-	const std::string_view version_prefix = "osu file format v";
-	if(!std::getline(file_, line) || !starts_with(ltrim(line), version_prefix)){
-		return tl::make_unexpected("Couldn't parse version prefix");
+	const auto utf_ge_16 = a == static_cast<char>(0xFF) && b == static_cast<char>(0xFE) || a == static_cast<char>(0xFE) && b == static_cast<char>(0xFF)
+	|| a == static_cast<char>(0x00) && b == static_cast<char>(0x00) && c == static_cast<char>(0xFE) && d == static_cast<char>(0xFF);
+	if (!utf_ge_16) file_.seekg(0);
+
+	if(utf_ge_16 && (!(c == (char)0x00 && d == (char)0x00) || !(c == static_cast<char>(0xFE) && d == static_cast<char>(0xFF)))){
+		file_.seekg(2);
 	}
 
+	const auto format_utf16 = [utf_ge_16](std::string& s)
+	{
+		if(utf_ge_16)
+			s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
+	};
+
+	using namespace std::string_literals;
+	std::string line;
+	const std::string_view version_prefix = "osu file format v";
+	size_t prefix_pos;
+	do {
+		if (!std::getline(file_, line)) {
+			return tl::make_unexpected("Couldn't read first line or find version");
+		}
+
+		format_utf16(line);
+		prefix_pos = line.find(version_prefix);
+	} while (prefix_pos == std::string::npos);
+
 	const std::string_view number = {
-		line.data() + version_prefix.length(),
+		line.data() + prefix_pos + version_prefix.length(),
 		line.length() - version_prefix.length()
 	};
+	
 	if(const auto ec = std::from_chars(number.data(),
 	                                   number.data() + number.length(), beatmap_.version).ec;
 		ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range){
@@ -314,6 +339,7 @@ tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 	}
 
 	while(std::getline(file_, line)){
+		format_utf16(line);
 		trim(line);
 
 		if(line.length() == 0) continue;
