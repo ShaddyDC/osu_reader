@@ -330,17 +330,31 @@ bool osu::Beatmap_parser::maybe_parse_utfheader()
 	return false;
 }
 
+void osu::Beatmap_parser::parse_line(const std::string_view line)
+{
+	if (line.empty()) return;
+	
+	if(starts_with(line, "[")) section_ = parse_section(line);
+	else if(section_ == Section::general) parse_general(line);
+	else if(section_ == Section::editor) parse_editor(line);
+	else if(section_ == Section::metadata) parse_metadata(line);
+	else if(section_ == Section::difficulty) parse_difficulty(line);
+	else if(section_ == Section::events) parse_events(line);
+	else if(section_ == Section::timing_points) parse_timing_points(line);
+	else if(section_ == Section::hitobjects) parse_hitobjects(line);
+}
+
 std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
 {
 	if(!file_.is_open()) return std::nullopt;
 
-	using String_mod_fn = void(std::string&);
+	using String_ref_fn = void(std::string&);
 	const auto format_utf16 = maybe_parse_utfheader()
-		                          ? static_cast<String_mod_fn*>([](std::string& s)
+		                          ? static_cast<String_ref_fn*>([](std::string& s)
 		                          {
 			                          s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
 		                          })
-		                          : static_cast<String_mod_fn*>([](std::string&) {});
+		                          : static_cast<String_ref_fn*>([](std::string&) {});
 
 	std::string line;
 	const std::string_view version_prefix = "osu file format v";
@@ -378,15 +392,7 @@ std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
 		format_utf16(line);
 		trim(line);
 
-		if(line.length() == 0) continue;
-		if(starts_with(line, "[")) section_ = parse_section(line);
-		else if(section_ == Section::general) parse_general(line);
-		else if(section_ == Section::editor) parse_editor(line);
-		else if(section_ == Section::metadata) parse_metadata(line);
-		else if(section_ == Section::difficulty) parse_difficulty(line);
-		else if(section_ == Section::events) parse_events(line);
-		else if(section_ == Section::timing_points) parse_timing_points(line);
-		else if(section_ == Section::hitobjects) parse_hitobjects(line);
+		parse_line(line);
 	}
 
 	return beatmap_;
