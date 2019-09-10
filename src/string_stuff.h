@@ -66,7 +66,27 @@ inline std::string_view ltrim_view(const std::string_view s)
 	{
 		return !std::isspace(static_cast<unsigned char>(ch));
 	});
-	return std::string_view{ s.data() + (it - s.begin()), static_cast<std::size_t>(s.end() - it) };
+	return std::string_view{
+		s.data() + std::distance(s.begin(), it),
+		static_cast<std::size_t>(std::distance(it, s.end()))
+	};
+}
+
+inline std::string_view rtrim_view(const std::string_view s)
+{
+	const auto it = std::find_if(s.rbegin(), s.rend(), [](const int ch)
+	{
+		return !std::isspace(static_cast<unsigned char>(ch));
+	});
+	return std::string_view{
+		s.data(),
+		static_cast<std::size_t>(s.size() - std::distance(s.rbegin(), it))
+	};
+}
+
+inline std::string_view trim_view(const std::string_view s)
+{
+	return ltrim_view(rtrim_view(s));
 }
 
 std::vector<std::string_view> split(std::string_view s, char delim);
