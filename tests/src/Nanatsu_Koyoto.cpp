@@ -38,7 +38,7 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.difficulty_name == "Extra");
 	CHECK(bm.source.empty());
 	// tags: contain unicode :(
-	//CHECK(bm.tags == );	
+	CHECK(bm.tags.size() == 2);
 	CHECK(bm.beatmap_id == 1619968);
 	CHECK(bm.beatmap_set_id == 770521);
 

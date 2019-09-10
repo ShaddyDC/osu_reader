@@ -36,7 +36,7 @@ TEST_CASE("Kakoi-naki")
 	CHECK(bm.difficulty_name == "this map is so bad cuz overmapping");
 	//CHECK(bm.source == "");
 	// tags: contain unicode :(
-	//CHECK(bm.tags == );	
+	CHECK(bm.tags.size() == 22);
 	CHECK(bm.beatmap_id == 1747613);
 	CHECK(bm.beatmap_set_id == 834245);
 

@@ -2,73 +2,82 @@
 #include "string_stuff.h"
 #include <charconv>
 #include "util.h"
+#include <map>
+#include <variant>
+
+using Beatmap_types = std::variant<int*, float*, bool*, std::string*,
+                                   std::chrono::milliseconds*, std::filesystem::path*, std::uint8_t*, Gamemode*,
+                                   std::vector<std::chrono::milliseconds>*, std::vector<std::string>*>;
+
 
 template<typename Type>
-bool maybe_parse(std::string_view line, std::string_view prefix, Type& value)
+void parse_value(std::string_view value_string, Type& value)
 {
-	if(starts_with(line, prefix)){
-		const auto value_string = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
-		std::from_chars(value_string.data(), value_string.data() + value_string.length(), value);
-		return true;
-	}
-	return false;
+	std::from_chars(value_string.data(), value_string.data() + value_string.length(), value);
 }
 
 template<>
-bool maybe_parse<>(std::string_view line, std::string_view prefix, bool& value)
+void parse_value<>(std::string_view value_string, bool& value)
 {
-	if(starts_with(line, prefix)){
-		const auto value_string = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
-		if(!value_string.empty()){
-			if(value_string[0] == '1') value = true;
-			else if(value_string[0] == '0') value = false;
-		}
-		return true;
+	if(!value_string.empty()){
+		if(value_string[0] == '1') value = true;
+		else if(value_string[0] == '0') value = false;
 	}
-	return false;
 }
 
 template<>
-bool maybe_parse<>(std::string_view line, std::string_view prefix, std::chrono::milliseconds& value)
+void parse_value<>(std::string_view value_string, std::chrono::milliseconds& value)
 {
 	auto v = 0;
-	if(maybe_parse(line, prefix, v)){
-		value = std::chrono::milliseconds{ v };
-		return true;
-	}
-	return false;
+	parse_value(value_string, v);
+	value = std::chrono::milliseconds{ v };
 }
 
 template<>
-bool maybe_parse<>(std::string_view line, std::string_view prefix, Gamemode& value)
+void parse_value<>(std::string_view value_string, Gamemode& value)
 {
 	auto v = 0;
-	if(maybe_parse(line, prefix, v)){
-		value = static_cast<Gamemode>(value);
-		return true;
-	}
-	return false;
+	parse_value(value_string, v);
+	value = static_cast<Gamemode>(value);
 }
 
 template<>
-bool maybe_parse<>(std::string_view line, std::string_view prefix, std::string& value)
+void parse_value<>(std::string_view value_string, std::string& value)
 {
-	if(starts_with(line, prefix)){
-		value = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
-		return true;
-	}
-	return false;
+	value = value_string;
 }
 
 template<>
-bool maybe_parse<>(std::string_view line, std::string_view prefix, std::filesystem::path& value)
+void parse_value<>(std::string_view value_string, std::filesystem::path& value)
 {
 	std::string s;
-	if(maybe_parse(line, prefix, s)){
-		value = s;
-		return true;
-	}
-	return false;
+	parse_value(value_string, s);
+	value = s;
+}
+
+template<>
+void parse_value<>(std::string_view value_string, std::vector<std::string>& value)
+{
+	const auto tokens = split(value_string, ' ');
+	std::transform(tokens.cbegin(), tokens.cend(), std::back_inserter(value),
+	               [](const auto e)
+	               {
+		               return std::string{ e };
+	               });
+}
+
+template<>
+void parse_value<>(std::string_view value_string, std::vector<std::chrono::milliseconds>& value)
+{
+	const auto tokens = split(value_string, ' ');
+	std::transform(tokens.cbegin(), tokens.cend(), std::back_inserter(value),
+	               [](const std::string_view s)
+	               {
+		               const auto trimmed = ltrim_view(s);
+		               int v;
+		               std::from_chars(trimmed.data(), trimmed.data() + trimmed.length(), v);
+		               return std::chrono::milliseconds{ v };
+	               });
 }
 
 std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesystem::path& file)
@@ -79,85 +88,117 @@ std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesyste
 osu::Beatmap_parser::Beatmap_parser(const std::filesystem::path& file)
 	: file_{ file } {}
 
-bool osu::Beatmap_parser::parse_general(const std::string_view line)
+void osu::Beatmap_parser::parse_general(const std::string_view line)
 {
-	// Try until first match is parsed
-	return !maybe_parse(line, "AudioFilename:", beatmap_.audio_file)
-			&& !maybe_parse(line, "AudioLeadIn:", beatmap_.audio_lead_in)
-			&& !maybe_parse(line, "PreviewTime:", beatmap_.preview_time)
-			&& !maybe_parse(line, "Countdown:", beatmap_.countdown)
-			&& !maybe_parse(line, "SampleSet:", beatmap_.sample_set)
-			&& !maybe_parse(line, "StackLeniency:", beatmap_.stack_leniency)
-			&& !maybe_parse(line, "Mode:", beatmap_.mode)
-			&& !maybe_parse(line, "LetterboxInBreaks:", beatmap_.letterbox_in_breaks)
-			&& !maybe_parse(line, "StoryFireInFront:", beatmap_.story_fire_in_front)
-			&& !maybe_parse(line, "SkinPreference:", beatmap_.skin_preference)
-			&& !maybe_parse(line, "EpilepsyWarning:", beatmap_.epilepsy_warning)
-			&& !maybe_parse(line, "CountdownOffset:", beatmap_.countdown_offset)
-			&& !maybe_parse(line, "WidescreenStoryboard:", beatmap_.widescreen_storyboard)
-			&& !maybe_parse(line, "SpecialStyle:", beatmap_.special_style)
-			&& !maybe_parse(line, "UseSkinSprites:", beatmap_.use_skin_sprites);
-}
+	const std::map<std::string_view, Beatmap_types> matcher{
+		{ "AudioFilename", &beatmap_.audio_file },
+		{ "AudioLeadIn", &beatmap_.audio_lead_in },
+		{ "PreviewTime", &beatmap_.preview_time },
+		{ "Countdown", &beatmap_.countdown },
+		{ "SampleSet", &beatmap_.sample_set },
+		{ "StackLeniency", &beatmap_.stack_leniency },
+		{ "Mode", &beatmap_.mode },
+		{ "LetterboxInBreaks", &beatmap_.letterbox_in_breaks },
+		{ "StoryFireInFront", &beatmap_.story_fire_in_front },
+		{ "SkinPreference", &beatmap_.skin_preference },
+		{ "EpilepsyWarning", &beatmap_.epilepsy_warning },
+		{ "CountdownOffset", &beatmap_.countdown_offset },
+		{ "WidescreenStoryboard", &beatmap_.widescreen_storyboard },
+		{ "SpecialStyle", &beatmap_.special_style },
+		{ "UseSkinSprites", &beatmap_.use_skin_sprites },
+	};
 
-bool osu::Beatmap_parser::maybe_parse_bookmarks(std::string_view line)
-{
-	const std::string_view prefix = "Bookmarks:";
-	if(!starts_with(line, prefix)){
-		return false;
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if(const auto match = matcher.find(rtrim_view(tokens[0]));
+		match != matcher.end()){
+		std::visit([&tokens](const auto& e)
+		{
+			parse_value(ltrim_view(tokens[1]), *e);
+		}, match->second);
 	}
-	const auto value = ltrim_view({ line.data() + prefix.length(), line.length() - prefix.length() });
-	for(const auto token : split(value, ' ')){
-		const auto t = ltrim_view(token);
-		int v        = 0;
-		if(const auto ec = std::from_chars(t.data(), t.data() + t.length(), v);
-			ec.ec != std::errc::invalid_argument && ec.ec != std::errc::result_out_of_range){
-			beatmap_.bookmarks.emplace_back(v);
-		}
+}
+
+void osu::Beatmap_parser::parse_editor(std::string_view line)
+{
+	const std::map<std::string_view, Beatmap_types> matcher{
+		{ "Bookmarks", &beatmap_.bookmarks },
+		{ "DistanceSpacing", &beatmap_.distance_spacing },
+		{ "BeatDivisor", &beatmap_.beat_divisor },
+		{ "GridSize", &beatmap_.grid_size },
+		{ "TimelineZoom", &beatmap_.timeline_zoom },
+	};
+
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if(const auto match = matcher.find(rtrim_view(tokens[0]));
+		match != matcher.end()){
+		std::visit([&tokens](const auto& e)
+		{
+			parse_value(ltrim_view(tokens[1]), *e);
+		}, match->second);
 	}
-
-	return true;
 }
 
-bool osu::Beatmap_parser::parse_editor(std::string_view line)
+void osu::Beatmap_parser::parse_metadata(std::string_view line)
 {
-	return !maybe_parse_bookmarks(line)
-			&& !maybe_parse(line, "DistanceSpacing:", beatmap_.distance_spacing)
-			&& !maybe_parse(line, "BeatDivisor:", beatmap_.beat_divisor)
-			&& !maybe_parse(line, "GridSize:", beatmap_.grid_size)
-			&& !maybe_parse(line, "TimelineZoom:", beatmap_.timeline_zoom);
+	const std::map<std::string_view, Beatmap_types> matcher{
+		{ "Title", &beatmap_.title },
+		{ "TitleUnicode", &beatmap_.title_unicode },
+		{ "Artist", &beatmap_.artist },
+		{ "ArtistUnicode", &beatmap_.artist_unicode },
+		{ "Creator", &beatmap_.creator },
+		{ "Version", &beatmap_.difficulty_name },
+		{ "Source", &beatmap_.source },
+		{ "Tags", &beatmap_.tags },
+		{ "BeatmapID", &beatmap_.beatmap_id },
+		{ "BeatmapSetID", &beatmap_.beatmap_set_id },
+	};
+
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if(const auto match = matcher.find(rtrim_view(tokens[0]));
+		match != matcher.end()){
+		std::visit([&tokens](const auto& e)
+		{
+			parse_value(ltrim_view(tokens[1]), *e);
+		}, match->second);
+	}
 }
 
-bool osu::Beatmap_parser::parse_metadata(std::string_view line)
+void osu::Beatmap_parser::parse_difficulty(std::string_view line)
 {
-	return !maybe_parse(line, "Title:", beatmap_.title)
-			&& !maybe_parse(line, "TitleUnicode:", beatmap_.title_unicode)
-			&& !maybe_parse(line, "Artist:", beatmap_.artist)
-			&& !maybe_parse(line, "ArtistUnicode:", beatmap_.artist_unicode)
-			&& !maybe_parse(line, "Creator:", beatmap_.creator)
-			&& !maybe_parse(line, "Version:", beatmap_.difficulty_name)
-			&& !maybe_parse(line, "Source:", beatmap_.source)
-			//&& !maybe_parse(line, "Tags:", beatmap_.tags)
-			&& !maybe_parse(line, "BeatmapID:", beatmap_.beatmap_id)
-			&& !maybe_parse(line, "BeatmapSetID:", beatmap_.beatmap_set_id);
+	const std::map<std::string_view, Beatmap_types> matcher{
+		{ "HPDrainRate", &beatmap_.hp },
+		{ "CircleSize", &beatmap_.cs },
+		{ "OverallDifficulty", &beatmap_.od },
+		{ "ApproachRate", &beatmap_.ar },
+		{ "SliderMultiplier", &beatmap_.slider_multiplier },
+		{ "SliderTickRate ", &beatmap_.slider_tick_rate },
+	};
+
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if(const auto match = matcher.find(rtrim_view(tokens[0]));
+		match != matcher.end()){
+		std::visit([&tokens](const auto& e)
+		{
+			parse_value(ltrim_view(tokens[1]), *e);
+		}, match->second);
+	}
 }
 
-bool osu::Beatmap_parser::parse_difficulty(std::string_view line)
-{
-	return !maybe_parse(line, "HPDrainRate:", beatmap_.hp)
-			&& !maybe_parse(line, "CircleSize:", beatmap_.cs)
-			&& !maybe_parse(line, "OverallDifficulty:", beatmap_.od)
-			&& !maybe_parse(line, "ApproachRate:", beatmap_.ar)
-			&& !maybe_parse(line, "SliderMultiplier:", beatmap_.slider_multiplier)
-			&& !maybe_parse(line, "SliderTickRate :", beatmap_.slider_tick_rate);
-}
-
-bool osu::Beatmap_parser::parse_events(std::string_view line)
+void osu::Beatmap_parser::parse_events(std::string_view line)
 {
 	if(const std::string_view bg_prefix = "0,0,\"", // 0,0,"BG.png",0,0
 	                          bg_suffix = "\",0,0";
 		starts_with(line, bg_prefix)){
 		beatmap_.background = std::string{ line.cbegin() + bg_prefix.length(), line.cend() - bg_suffix.length() };
-		return true;
+		return;
 	}
 	if(const std::string_view break_prefix = "2,"; // 2,start,end
 		starts_with(line, break_prefix)){
@@ -165,22 +206,20 @@ bool osu::Beatmap_parser::parse_events(std::string_view line)
 			line.data() + break_prefix.length(), line.length() - break_prefix.length()
 		};
 		auto tokens = split(value_string, ',');
-		if(tokens.size() != 2) return true;
+		if(tokens.size() != 2) return;
 		std::for_each(tokens.begin(), tokens.end(), ltrim_view);
 		int a, b;
 		std::from_chars(tokens[0].data(), tokens[0].data() + tokens[0].length(), a);
 		std::from_chars(tokens[1].data(), tokens[1].data() + tokens[1].length(), b);
 		beatmap_.breaks.emplace_back(a, b);
-		return true;
 	}
-	return false;
 }
 
 
-bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
+void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 {
 	const auto tokens = split(line, ',');
-	if(tokens.size() < 8) return true;
+	if(tokens.size() < 8) return;
 	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
 
 	const auto parse_i = [&](auto i, auto& v)
@@ -216,13 +255,12 @@ bool osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	}
 
 	beatmap_.timing_points.push_back(point);
-	return true;
 }
 
-bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
+void osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 {
 	const auto tokens = split(line, ',');
-	if(tokens.size() < 4) return true;
+	if(tokens.size() < 4) return;
 	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
 
 	const auto parse_i = [&](auto i, auto& v)
@@ -241,7 +279,7 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		circle.time = std::chrono::milliseconds{ time };
 		beatmap_.circles.push_back(circle);
 	} else if(type & static_cast<int>(Hitobject_type::slider)){
-		if(tokens.size() < 8) return true;
+		if(tokens.size() < 8) return;
 		Slider slider{};
 		Point point{};
 		parse_i(0, point.x);
@@ -254,7 +292,7 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		parse_i(7, slider.length);
 
 		const auto sub_tokens = split(tokens[5], '|');
-		if(sub_tokens.size() < 2) return true;
+		if(sub_tokens.size() < 2) return;
 		std::for_each(sub_tokens.begin(), sub_tokens.end(), ltrim_view);
 
 		const auto valid_slider_type = [&](const char slider_type)
@@ -268,7 +306,7 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 				return slider_type == static_cast<char>(e);
 			});
 		};
-		if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return true;
+		if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return;
 
 		slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
 		std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points), [](auto t)
@@ -281,7 +319,7 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		beatmap_.sliders.push_back(slider);
 
 	} else if(type & static_cast<int>(Hitobject_type::spinner)){
-		if(tokens.size() < 6) return true;
+		if(tokens.size() < 6) return;
 		Spinner spinner{};
 		auto time = 0;
 		parse_i(2, time);
@@ -290,8 +328,6 @@ bool osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		spinner.end = std::chrono::milliseconds{ time };
 		beatmap_.spinners.push_back(spinner);
 	}
-
-	return true;
 }
 
 bool osu::Beatmap_parser::maybe_parse_utfheader()
@@ -332,8 +368,8 @@ bool osu::Beatmap_parser::maybe_parse_utfheader()
 
 void osu::Beatmap_parser::parse_line(const std::string_view line)
 {
-	if (line.empty()) return;
-	
+	if(line.empty()) return;
+
 	if(starts_with(line, "[")) section_ = parse_section(line);
 	else if(section_ == Section::general) parse_general(line);
 	else if(section_ == Section::editor) parse_editor(line);
@@ -361,29 +397,28 @@ std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
 
 	const auto seek_version_string = [&]
 	{
-		while (std::getline(file_, line)) {
+		while(std::getline(file_, line)){
 			format_utf16(line);
-			if (const auto pos = line.find(version_prefix);
-				pos != std::string::npos) {
+			if(const auto pos = line.find(version_prefix);
+				pos != std::string::npos){
 				return pos;
 			}
 		}
 		return std::string::npos;
 	};
-	
+
 	if(const auto prefix_pos = seek_version_string();
 		prefix_pos == std::string::npos){
 		return std::nullopt;
-	}
-	else {
+	} else{
 		const std::string_view number_string = {
 			line.data() + prefix_pos + version_prefix.length(),
 			line.length() - version_prefix.length() - prefix_pos
 		};
 
-		if (const auto ec = std::from_chars(number_string.data(),
-			number_string.data() + number_string.length(), beatmap_.version).ec;
-			ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
+		if(const auto ec = std::from_chars(number_string.data(),
+		                                   number_string.data() + number_string.length(), beatmap_.version).ec;
+			ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range){
 			return std::nullopt;
 		}
 	}

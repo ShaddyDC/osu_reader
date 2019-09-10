@@ -22,16 +22,15 @@ namespace osu{
 		};
 
 		explicit Beatmap_parser(const std::filesystem::path& file);
-		bool parse_general(std::string_view line);
-		bool maybe_parse_bookmarks(std::string_view line);
-		bool parse_editor(std::string_view line);
-		bool parse_metadata(std::string_view line);
-		bool parse_difficulty(std::string_view line);
-		bool parse_events(std::string_view line);
-		bool parse_timing_points(std::string_view line);
-		bool parse_hitobjects(std::string_view line);
+		void parse_general(std::string_view line);
+		void parse_editor(std::string_view line);
+		void parse_metadata(std::string_view line);
+		void parse_difficulty(std::string_view line);
+		void parse_events(std::string_view line);
+		void parse_timing_points(std::string_view line);
+		void parse_hitobjects(std::string_view line);
 		bool maybe_parse_utfheader();
-		void parse_line(const std::string_view line);
+		void parse_line(std::string_view line);
 		std::optional<Beatmap_file> parse_impl();
 		static Section parse_section(std::string_view line);
 
