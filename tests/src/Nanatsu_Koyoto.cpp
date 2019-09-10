@@ -7,12 +7,9 @@ TEST_CASE("Nanatsu Koyoto")
 {
 	const auto bm_e = osu::Beatmap_parser::parse("res/A.SAKA - Nanatsu Koyoto (ailv) [Extra].osu");
 
-	if(!bm_e.has_value())
-		WARN(bm_e.error());
-
 	REQUIRE(bm_e.has_value());
 
-	const auto& bm = bm_e.value();
+	const auto& bm = *bm_e;
 
 	CHECK(bm.version == 14);
 	CHECK(bm.audio_file == "audio.mp3");

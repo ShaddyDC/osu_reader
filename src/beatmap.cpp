@@ -71,7 +71,7 @@ bool maybe_parse<>(std::string_view line, std::string_view prefix, std::filesyst
 	return false;
 }
 
-tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse(const std::filesystem::path& file)
+std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesystem::path& file)
 {
 	return Beatmap_parser{ file }.parse_impl();
 }
@@ -330,9 +330,9 @@ bool osu::Beatmap_parser::maybe_parse_utfheader()
 	return false;
 }
 
-tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
+std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
 {
-	if(!file_.is_open()) return tl::make_unexpected("Couldn't open file");
+	if(!file_.is_open()) return std::nullopt;
 
 	using String_mod_fn = void(std::string&);
 	const auto format_utf16 = maybe_parse_utfheader()
@@ -359,7 +359,7 @@ tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 	
 	if(const auto prefix_pos = seek_version_string();
 		prefix_pos == std::string::npos){
-		return tl::make_unexpected("Couldn't read first line or find version");
+		return std::nullopt;
 	}
 	else {
 		const std::string_view number_string = {
@@ -370,7 +370,7 @@ tl::expected<osu::Beatmap_file, std::string> osu::Beatmap_parser::parse_impl()
 		if (const auto ec = std::from_chars(number_string.data(),
 			number_string.data() + number_string.length(), beatmap_.version).ec;
 			ec == std::errc::invalid_argument || ec == std::errc::result_out_of_range) {
-			return tl::make_unexpected("Couldn't parse version number");
+			return std::nullopt;
 		}
 	}
 

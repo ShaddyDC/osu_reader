@@ -1,12 +1,12 @@
 #pragma once
 #include "beatmap_file.h"
 #include <fstream>
-#include <tl/expected.hpp>
+#include <optional>
 
 namespace osu{
 	class Beatmap_parser{
 	public:
-		static tl::expected<Beatmap_file, std::string> parse(const std::filesystem::path& file);
+		static std::optional<Beatmap_file> parse(const std::filesystem::path& file);
 
 	private:
 		enum class Section{
@@ -31,7 +31,7 @@ namespace osu{
 		bool parse_timing_points(std::string_view line);
 		bool parse_hitobjects(std::string_view line);
 		bool maybe_parse_utfheader();
-		tl::expected<Beatmap_file, std::string> parse_impl();
+		std::optional<Beatmap_file> parse_impl();
 		static Section parse_section(std::string_view line);
 
 		std::ifstream file_;
