@@ -14,6 +14,8 @@ add_library(osuReader
 	src/string_stuff.cpp
 )
 
+add_library(osuReader::osuReader ALIAS osuReader)
+
 set_target_properties(osuReader PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON

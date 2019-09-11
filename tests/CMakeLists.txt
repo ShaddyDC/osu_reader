@@ -10,7 +10,7 @@ add_executable(osuReaderTests src/main.cpp
 )
 
 target_link_libraries(osuReaderTests
-	osuReader
+	osuReader::osuReader
 	Catch2::Catch2
 )
 
