@@ -10,7 +10,8 @@ TEST_CASE("No Beatmap")
 
 TEST_CASE("Empty Line Beginning")
 {
-	const auto bm_e = osu::Beatmap_parser::parse("res/LamazeP - Koi no Program Hatsudou (feat. Hatsune Miku) (Sonnyc) [Euny's Hard].osu");
+	const auto bm_e = osu::Beatmap_parser::parse(
+		"res/LamazeP - Koi no Program Hatsudou (feat. Hatsune Miku) (Sonnyc) [Euny's Hard].osu");
 
 	REQUIRE(bm_e.has_value());
 	REQUIRE(bm_e->version == 14);
