@@ -34,7 +34,6 @@ namespace osu{
 		std::vector<Point> points;
 		int repeat;
 		float length;
-		std::chrono::milliseconds duration;
 	};
 
 	struct Spinner{
