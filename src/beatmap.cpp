@@ -11,68 +11,53 @@ using Beatmap_types = std::variant<int*, float*, bool*, std::string*,
                                    std::chrono::milliseconds*, std::filesystem::path*, std::uint8_t*, Gamemode*,
                                    std::vector<std::chrono::milliseconds>*, std::vector<std::string>*>;
 
-std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesystem::path& file)
+struct osu::Beatmap_parser::Map {
+	std::map<std::string_view, Beatmap_types> map;
+};
+
+void if_found_parse(const std::map<std::string_view, Beatmap_types>& map, 
+	const std::string_view element,	const std::string_view value_string)
 {
-	return Beatmap_parser{}.parse_impl(file);
-}
-
-void osu::Beatmap_parser::parse_general(const std::string_view line)
-{
-	const std::map<std::string_view, Beatmap_types> matcher{
-		{ "AudioFilename", &beatmap_.audio_file },
-		{ "AudioLeadIn", &beatmap_.audio_lead_in },
-		{ "PreviewTime", &beatmap_.preview_time },
-		{ "Countdown", &beatmap_.countdown },
-		{ "SampleSet", &beatmap_.sample_set },
-		{ "StackLeniency", &beatmap_.stack_leniency },
-		{ "Mode", &beatmap_.mode },
-		{ "LetterboxInBreaks", &beatmap_.letterbox_in_breaks },
-		{ "StoryFireInFront", &beatmap_.story_fire_in_front },
-		{ "SkinPreference", &beatmap_.skin_preference },
-		{ "EpilepsyWarning", &beatmap_.epilepsy_warning },
-		{ "CountdownOffset", &beatmap_.countdown_offset },
-		{ "WidescreenStoryboard", &beatmap_.widescreen_storyboard },
-		{ "SpecialStyle", &beatmap_.special_style },
-		{ "UseSkinSprites", &beatmap_.use_skin_sprites },
-	};
-
-	const auto tokens = split(line, ':');
-	if(tokens.size() != 2) return;
-
-	if(const auto match = matcher.find(rtrim_view(tokens[0]));
-		match != matcher.end()){
-		std::visit([&tokens](const auto& e)
+	if (const auto match = map.find(rtrim_view(element));
+		match != map.end()) {
+		std::visit([&value_string](const auto& e)
 		{
-			parse_value(ltrim_view(tokens[1]), *e);
+			parse_value(ltrim_view(value_string), *e);
 		}, match->second);
 	}
 }
 
-void osu::Beatmap_parser::parse_editor(std::string_view line)
+osu::Beatmap_parser::Beatmap_parser()
+	: general_matcher_{ new Map() }, editor_matcher_{ new Map() },
+	metadata_matcher_{ new Map() }, difficulty_matcher_{ new Map() }
 {
-	const std::map<std::string_view, Beatmap_types> matcher{
+	*general_matcher_ = Map{ {
+			{ "AudioFilename",&beatmap_.audio_file },
+			{ "AudioLeadIn", &beatmap_.audio_lead_in },
+			{ "PreviewTime", &beatmap_.preview_time },
+			{ "Countdown", &beatmap_.countdown },
+			{ "SampleSet", &beatmap_.sample_set },
+			{ "StackLeniency", &beatmap_.stack_leniency },
+			{ "Mode", &beatmap_.mode },
+			{ "LetterboxInBreaks", &beatmap_.letterbox_in_breaks },
+			{ "StoryFireInFront", &beatmap_.story_fire_in_front },
+			{ "SkinPreference", &beatmap_.skin_preference },
+			{ "EpilepsyWarning", &beatmap_.epilepsy_warning },
+			{ "CountdownOffset", &beatmap_.countdown_offset },
+			{ "WidescreenStoryboard", &beatmap_.widescreen_storyboard },
+			{ "SpecialStyle", &beatmap_.special_style },
+			{ "UseSkinSprites", &beatmap_.use_skin_sprites },
+	} };
+
+	*editor_matcher_ = Map{ {
 		{ "Bookmarks", &beatmap_.bookmarks },
 		{ "DistanceSpacing", &beatmap_.distance_spacing },
 		{ "BeatDivisor", &beatmap_.beat_divisor },
 		{ "GridSize", &beatmap_.grid_size },
 		{ "TimelineZoom", &beatmap_.timeline_zoom },
-	};
+	} };
 
-	const auto tokens = split(line, ':');
-	if(tokens.size() != 2) return;
-
-	if(const auto match = matcher.find(rtrim_view(tokens[0]));
-		match != matcher.end()){
-		std::visit([&tokens](const auto& e)
-		{
-			parse_value(ltrim_view(tokens[1]), *e);
-		}, match->second);
-	}
-}
-
-void osu::Beatmap_parser::parse_metadata(std::string_view line)
-{
-	const std::map<std::string_view, Beatmap_types> matcher{
+	*metadata_matcher_ = Map{ {
 		{ "Title", &beatmap_.title },
 		{ "TitleUnicode", &beatmap_.title_unicode },
 		{ "Artist", &beatmap_.artist },
@@ -83,41 +68,61 @@ void osu::Beatmap_parser::parse_metadata(std::string_view line)
 		{ "Tags", &beatmap_.tags },
 		{ "BeatmapID", &beatmap_.beatmap_id },
 		{ "BeatmapSetID", &beatmap_.beatmap_set_id },
-	};
+	} };
 
-	const auto tokens = split(line, ':');
-	if(tokens.size() != 2) return;
-
-	if(const auto match = matcher.find(rtrim_view(tokens[0]));
-		match != matcher.end()){
-		std::visit([&tokens](const auto& e)
-		{
-			parse_value(ltrim_view(tokens[1]), *e);
-		}, match->second);
-	}
-}
-
-void osu::Beatmap_parser::parse_difficulty(std::string_view line)
-{
-	const std::map<std::string_view, Beatmap_types> matcher{
+	*difficulty_matcher_ = Map{ {
 		{ "HPDrainRate", &beatmap_.hp },
 		{ "CircleSize", &beatmap_.cs },
 		{ "OverallDifficulty", &beatmap_.od },
 		{ "ApproachRate", &beatmap_.ar },
 		{ "SliderMultiplier", &beatmap_.slider_multiplier },
 		{ "SliderTickRate ", &beatmap_.slider_tick_rate },
-	};
+	} };
+}
 
+osu::Beatmap_parser::~Beatmap_parser()
+{
+	delete general_matcher_;
+	delete editor_matcher_;
+	delete metadata_matcher_;
+	delete difficulty_matcher_;
+}
+
+std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesystem::path& file)
+{
+	return Beatmap_parser{}.parse_impl(file);
+}
+
+void osu::Beatmap_parser::parse_general(const std::string_view line)
+{
 	const auto tokens = split(line, ':');
 	if(tokens.size() != 2) return;
 
-	if(const auto match = matcher.find(rtrim_view(tokens[0]));
-		match != matcher.end()){
-		std::visit([&tokens](const auto& e)
-		{
-			parse_value(ltrim_view(tokens[1]), *e);
-		}, match->second);
-	}
+	if_found_parse(general_matcher_->map, tokens[0], tokens[1]);
+}
+
+void osu::Beatmap_parser::parse_editor(std::string_view line)
+{
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if_found_parse(editor_matcher_->map, tokens[0], tokens[1]);
+}
+
+void osu::Beatmap_parser::parse_metadata(std::string_view line)
+{
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if_found_parse(metadata_matcher_->map, tokens[0], tokens[1]);
+}
+
+void osu::Beatmap_parser::parse_difficulty(std::string_view line)
+{
+	const auto tokens = split(line, ':');
+	if(tokens.size() != 2) return;
+
+	if_found_parse(difficulty_matcher_->map, tokens[0], tokens[1]);
 }
 
 void osu::Beatmap_parser::parse_events(std::string_view line)

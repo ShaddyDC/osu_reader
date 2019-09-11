@@ -6,6 +6,7 @@ add_executable(osuReaderTests src/main.cpp
 	src/Nanatsu_Koyoto.cpp
 	src/parse_all.cpp
 	src/file_formats.cpp
+	src/parser_properties.cpp
 )
 
 target_link_libraries(osuReaderTests
