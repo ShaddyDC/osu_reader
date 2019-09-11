@@ -142,7 +142,7 @@ void osu::Beatmap_parser::parse_events(std::string_view line)
 		};
 		auto tokens = split(value_string, ',');
 		if(tokens.size() != 2) return;
-		std::for_each(tokens.begin(), tokens.end(), ltrim_view);
+		std::transform(tokens.begin(), tokens.end(), tokens.begin(), ltrim_view);
 		beatmap_.breaks.emplace_back(parse_value<int>(tokens[0]), parse_value<int>(tokens[1]));
 	}
 }
@@ -160,9 +160,9 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 		inheritable,
 		kiai
 	};
-	const auto tokens = split(line, ',');
+	auto tokens = split(line, ',');
 	if(tokens.size() < 8) return;
-	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
+	std::transform(tokens.begin(), tokens.end(), tokens.begin(), ltrim_view);
 
 	Beatmap_file::Timing_point point{};
 	parse_value(tokens[time], point.time);
@@ -231,9 +231,10 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 	parse_value(tokens[repeat], slider.repeat);
 	parse_value(tokens[length], slider.length);
 
-	const auto sub_tokens = split(tokens[slider_data], '|');
+	auto sub_tokens = split(tokens[slider_data], '|');
 	if(sub_tokens.size() < 2) return; // Format: B|380:120|332:96|332:96|304:124
-	std::for_each(sub_tokens.begin(), sub_tokens.end(), ltrim_view);
+	std::transform(sub_tokens.begin(), sub_tokens.end(), 
+		sub_tokens.begin(), ltrim_view);
 
 	const auto valid_slider_type = [](const char slider_type)
 	{
@@ -282,9 +283,9 @@ void osu::Beatmap_parser::parse_hitobject(std::string_view line)
 {
 	constexpr auto type_token = 3;
 
-	const auto tokens = split(line, ',');
+	auto tokens = split(line, ',');
 	if(tokens.size() < 4) return;
-	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
+	std::transform(tokens.begin(), tokens.end(), tokens.begin(), ltrim_view);
 
 	const auto type = parse_value<int>(tokens[type_token]);
 	if(type & static_cast<int>(Hitobject_type::circle)){
