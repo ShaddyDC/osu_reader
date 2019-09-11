@@ -16,9 +16,9 @@ void parse_value(std::string_view value_string, Type& value)
 template<>
 inline void parse_value<>(std::string_view value_string, bool& value)
 {
-	if (!value_string.empty()) {
-		if (value_string[0] == '1') value = true;
-		else if (value_string[0] == '0') value = false;
+	if(!value_string.empty()){
+		if(value_string[0] == '1') value = true;
+		else if(value_string[0] == '0') value = false;
 	}
 }
 
@@ -57,10 +57,10 @@ inline void parse_value<>(std::string_view value_string, std::vector<std::string
 {
 	const auto tokens = split(value_string, ' ');
 	std::transform(tokens.cbegin(), tokens.cend(), std::back_inserter(value),
-		[](const auto e)
-	{
-		return std::string{ e };
-	});
+	               [](const auto e)
+	               {
+		               return std::string{ e };
+	               });
 }
 
 template<>
@@ -68,13 +68,13 @@ inline void parse_value<>(std::string_view value_string, std::vector<std::chrono
 {
 	const auto tokens = split(value_string, ' ');
 	std::transform(tokens.cbegin(), tokens.cend(), std::back_inserter(value),
-		[](const std::string_view s)
-	{
-		const auto trimmed = ltrim_view(s);
-		int v;
-		std::from_chars(trimmed.data(), trimmed.data() + trimmed.length(), v);
-		return std::chrono::milliseconds{ v };
-	});
+	               [](const std::string_view s)
+	               {
+		               const auto trimmed = ltrim_view(s);
+		               int v;
+		               std::from_chars(trimmed.data(), trimmed.data() + trimmed.length(), v);
+		               return std::chrono::milliseconds{ v };
+	               });
 }
 
 template<typename Type>
