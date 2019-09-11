@@ -194,10 +194,12 @@ void osu::Beatmap_parser::parse_difficulty(std::string_view line)
 
 void osu::Beatmap_parser::parse_events(std::string_view line)
 {
-	if(const std::string_view bg_prefix = "0,0,\"", // 0,0,"BG.png",0,0
-	                          bg_suffix = "\",0,0";
+	if(const std::string_view bg_prefix = "0,0,\""; // 0,0,"BG.png",0,0
 		starts_with(line, bg_prefix)){
-		beatmap_.background = std::string{ line.cbegin() + bg_prefix.length(), line.cend() - bg_suffix.length() };
+		const auto start = line.cbegin() + bg_prefix.length();
+		const auto end = std::find(start, line.cend(), '\"');
+		if(end != line.cend())
+			beatmap_.background = std::string{ start, end };
 		return;
 	}
 	if(const std::string_view break_prefix = "2,"; // 2,start,end
