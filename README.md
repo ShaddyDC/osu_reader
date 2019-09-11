@@ -27,3 +27,6 @@ Maybe it will be added to other package managers in the future if it is more mat
 - ???
 
 If there's anything missing you need, open an issue and I'll push it on the priority list. 
+
+## Licence
+MIT
