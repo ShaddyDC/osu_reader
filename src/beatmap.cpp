@@ -250,6 +250,64 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	beatmap_.timing_points.push_back(point);
 }
 
+void osu::Beatmap_parser::parse_circle(const std::vector<std::string_view>& tokens) {	
+	Hitcircle circle{};
+	parse_value(tokens[0], circle.pos.x);
+	parse_value(tokens[1], circle.pos.y);
+	parse_value(tokens[2], circle.time);
+	beatmap_.circles.push_back(circle);
+}
+
+void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& tokens) {
+	if(tokens.size() < 8) return;
+	Slider slider{};
+	Point point{};
+	parse_value(tokens[0], point.x);
+	parse_value(tokens[1], point.y);
+	slider.points.push_back(point);
+	parse_value(tokens[2], slider.time);
+	parse_value(tokens[6], slider.repeat);
+	parse_value(tokens[7], slider.length);
+
+	const auto sub_tokens = split(tokens[5], '|');
+	if(sub_tokens.size() < 2) return;
+	std::for_each(sub_tokens.begin(), sub_tokens.end(), ltrim_view);
+
+	const auto valid_slider_type = [&](const char slider_type)
+	{
+		const std::vector<Slider::Slider_type> slider_types{
+			Slider::Slider_type::linear, Slider::Slider_type::perfect,
+			Slider::Slider_type::bezier, Slider::Slider_type::catmull
+		};
+		return std::any_of(slider_types.cbegin(), slider_types.cend(), [&](auto e)
+		{
+			return slider_type == static_cast<char>(e);
+		});
+	};
+	if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return;
+
+	slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
+	std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points), [](auto t)
+	{
+		Point point{};
+		const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
+		std::from_chars(pos + 1, t.data() + t.length(), point.y);
+		return point;
+	});
+	beatmap_.sliders.push_back(slider);
+}
+
+void osu::Beatmap_parser::parse_spinner(const std::vector<std::string_view>& tokens) {
+	if(tokens.size() < 6) return;
+	Spinner spinner{};
+	auto time = 0;
+	parse_value(tokens[2], time);
+	spinner.start = std::chrono::milliseconds{ time };
+	parse_value(tokens[5], time);
+	spinner.end = std::chrono::milliseconds{ time };
+	beatmap_.spinners.push_back(spinner);
+}
+
 void osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 {
 	const auto tokens = split(line, ',');
@@ -259,58 +317,12 @@ void osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 	auto type = 0;
 	parse_value(tokens[3], type);
 	if(type & static_cast<int>(Hitobject_type::circle)){
-		Hitcircle circle{};
-		parse_value(tokens[0], circle.pos.x);
-		parse_value(tokens[1], circle.pos.y);
-		parse_value(tokens[2], circle.time);
-		beatmap_.circles.push_back(circle);
+		parse_circle(tokens);
 	} else if(type & static_cast<int>(Hitobject_type::slider)){
-		if(tokens.size() < 8) return;
-		Slider slider{};
-		Point point{};
-		parse_value(tokens[0], point.x);
-		parse_value(tokens[1], point.y);
-		slider.points.push_back(point);
-		parse_value(tokens[2], slider.time);
-		parse_value(tokens[6], slider.repeat);
-		parse_value(tokens[7], slider.length);
-
-		const auto sub_tokens = split(tokens[5], '|');
-		if(sub_tokens.size() < 2) return;
-		std::for_each(sub_tokens.begin(), sub_tokens.end(), ltrim_view);
-
-		const auto valid_slider_type = [&](const char slider_type)
-		{
-			const std::vector<Slider::Slider_type> slider_types{
-				Slider::Slider_type::linear, Slider::Slider_type::perfect,
-				Slider::Slider_type::bezier, Slider::Slider_type::catmull
-			};
-			return std::any_of(slider_types.cbegin(), slider_types.cend(), [&](auto e)
-			{
-				return slider_type == static_cast<char>(e);
-			});
-		};
-		if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return;
-
-		slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
-		std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points), [](auto t)
-		{
-			Point point{};
-			const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
-			std::from_chars(pos + 1, t.data() + t.length(), point.y);
-			return point;
-		});
-		beatmap_.sliders.push_back(slider);
+		parse_slider(tokens);
 
 	} else if(type & static_cast<int>(Hitobject_type::spinner)){
-		if(tokens.size() < 6) return;
-		Spinner spinner{};
-		auto time = 0;
-		parse_value(tokens[2], time);
-		spinner.start = std::chrono::milliseconds{ time };
-		parse_value(tokens[5], time);
-		spinner.end = std::chrono::milliseconds{ time };
-		beatmap_.spinners.push_back(spinner);
+		parse_spinner(tokens);
 	}
 }
 

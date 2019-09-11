@@ -28,6 +28,9 @@ namespace osu{
 		void parse_difficulty(std::string_view line);
 		void parse_events(std::string_view line);
 		void parse_timing_points(std::string_view line);
+		void parse_circle(const std::vector<std::string_view>& tokens);
+		void parse_slider(const std::vector<std::string_view>& tokens);
+		void parse_spinner(const std::vector<std::string_view>& tokens);
 		void parse_hitobjects(std::string_view line);
 		bool maybe_parse_utfheader();
 		void parse_line(std::string_view line);
