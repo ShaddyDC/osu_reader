@@ -222,17 +222,12 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	if(tokens.size() < 8) return;
 	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
 
-	const auto parse_i = [&](auto i, auto& v)
-	{
-		std::from_chars(tokens[i].data(), tokens[i].data() + tokens[i].length(), v);
-	};
-
 	Beatmap_file::Timing_point point{};
 	int v0;
-	parse_i(0, v0);
+	parse_value(tokens[0], v0);
 	point.time = std::chrono::milliseconds{ v0 };
 	float v1;
-	parse_i(1, v1);
+	parse_value(tokens[1], v1);
 	if(v1 < 0){
 		point.inheritable           = false;
 		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(), beatmap_.timing_points.crend(),
@@ -246,13 +241,11 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 		using namespace std::chrono_literals;
 		point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(v1 * 1ms);
 	}
-	parse_i(2, point.meter);
-	parse_i(3, point.sample_set);
-	parse_i(4, point.sample_index);
-	parse_i(5, point.sample_volume);
-	if(!tokens[7].empty()){
-		point.kiai = tokens[7][0] == '1';
-	}
+	parse_value(tokens[2], point.meter);
+	parse_value(tokens[3], point.sample_set);
+	parse_value(tokens[4], point.sample_index);
+	parse_value(tokens[5], point.sample_volume);
+	parse_value(tokens[7], point.kiai);
 
 	beatmap_.timing_points.push_back(point);
 }
@@ -263,33 +256,24 @@ void osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 	if(tokens.size() < 4) return;
 	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
 
-	const auto parse_i = [&](auto i, auto& v)
-	{
-		std::from_chars(tokens[i].data(), tokens[i].data() + tokens[i].length(), v);
-	};
-
 	auto type = 0;
-	parse_i(3, type);
+	parse_value(tokens[3], type);
 	if(type & static_cast<int>(Hitobject_type::circle)){
 		Hitcircle circle{};
-		parse_i(0, circle.pos.x);
-		parse_i(1, circle.pos.y);
-		auto time = 0;
-		parse_i(2, time);
-		circle.time = std::chrono::milliseconds{ time };
+		parse_value(tokens[0], circle.pos.x);
+		parse_value(tokens[1], circle.pos.y);
+		parse_value(tokens[2], circle.time);
 		beatmap_.circles.push_back(circle);
 	} else if(type & static_cast<int>(Hitobject_type::slider)){
 		if(tokens.size() < 8) return;
 		Slider slider{};
 		Point point{};
-		parse_i(0, point.x);
-		parse_i(1, point.y);
+		parse_value(tokens[0], point.x);
+		parse_value(tokens[1], point.y);
 		slider.points.push_back(point);
-		auto time = 0;
-		parse_i(2, time);
-		slider.time = std::chrono::milliseconds{ time };
-		parse_i(6, slider.repeat);
-		parse_i(7, slider.length);
+		parse_value(tokens[2], slider.time);
+		parse_value(tokens[6], slider.repeat);
+		parse_value(tokens[7], slider.length);
 
 		const auto sub_tokens = split(tokens[5], '|');
 		if(sub_tokens.size() < 2) return;
@@ -322,9 +306,9 @@ void osu::Beatmap_parser::parse_hitobjects(std::string_view line)
 		if(tokens.size() < 6) return;
 		Spinner spinner{};
 		auto time = 0;
-		parse_i(2, time);
+		parse_value(tokens[2], time);
 		spinner.start = std::chrono::milliseconds{ time };
-		parse_i(5, time);
+		parse_value(tokens[5], time);
 		spinner.end = std::chrono::milliseconds{ time };
 		beatmap_.spinners.push_back(spinner);
 	}
