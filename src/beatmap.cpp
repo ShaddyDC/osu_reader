@@ -4,6 +4,7 @@
 #include "util.h"
 #include <map>
 #include <variant>
+#include <fstream>
 #include "parse_string.h"
 
 using Beatmap_types = std::variant<int*, float*, bool*, std::string*,
@@ -12,11 +13,8 @@ using Beatmap_types = std::variant<int*, float*, bool*, std::string*,
 
 std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesystem::path& file)
 {
-	return Beatmap_parser{ file }.parse_impl();
+	return Beatmap_parser{}.parse_impl(file);
 }
-
-osu::Beatmap_parser::Beatmap_parser(const std::filesystem::path& file)
-	: file_{ file } {}
 
 void osu::Beatmap_parser::parse_general(const std::string_view line)
 {
@@ -293,11 +291,8 @@ void osu::Beatmap_parser::parse_hitobject(std::string_view line)
 	}
 }
 
-bool osu::Beatmap_parser::maybe_parse_utfheader()
+bool osu::Beatmap_parser::maybe_parse_utfheader(std::string_view line)
 {
-	std::vector<char> header;
-	std::generate_n(std::back_inserter(header), 4, [this] { return static_cast<char>(file_.get()); });
-
 	using namespace util;
 
 	const std::vector<std::vector<char>> potential_ge_utf16_headers{
@@ -307,25 +302,31 @@ bool osu::Beatmap_parser::maybe_parse_utfheader()
 		{ 0xFF_ch, 0xFE_ch },                   // utf16 LE
 	};
 
+	std::vector<char> header;
+	std::copy_n(line.cbegin(),
+	            std::min(4, static_cast<int>(line.size())),
+	            std::back_inserter(header));
+
 	const auto matches_header = [&header](const auto& e)
 	{
+		if(e.size() > header.size()) return false;
 		return std::equal(e.cbegin(), e.cend(), header.cbegin());
 	};
 
 	if(const auto matching_header = std::find_if(potential_ge_utf16_headers.cbegin(), potential_ge_utf16_headers.cend(),
 	                                             matches_header);
 		matching_header != potential_ge_utf16_headers.cend()){
-		if(matching_header->size() < header.size()) file_.seekg(matching_header->size());
 		return true;
 	}
 
+	// This check is now superfluous because the header bytes aren't skipped anymore
+	// but I'm partial to it, and it will be optimised away
+	// so it'll stay
 	const std::vector<char> utf8_header{ 0xFF_ch, 0xBB_ch, 0xBF_ch };
-	if(const auto is_utf8 = std::equal(utf8_header.cbegin(), utf8_header.cend(), header.cbegin());
+	if(const auto is_utf8 = matches_header(utf8_header);
 		is_utf8){
-		file_.seekg(utf8_header.size());
 		return false;
 	}
-	file_.seekg(0);
 	return false;
 }
 
@@ -343,30 +344,32 @@ void osu::Beatmap_parser::parse_line(const std::string_view line)
 	else if(section_ == Section::hitobjects) parse_hitobject(line);
 }
 
-std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
+std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl(const std::filesystem::path& file_path)
 {
-	if(!file_.is_open()) return std::nullopt;
+	std::ifstream file{ file_path };
+	if(!file.is_open()) return std::nullopt;
+
+	std::string line;
+	std::getline(file, line);
 
 	using String_ref_fn = void(std::string&);
-	const auto format_utf16 = maybe_parse_utfheader()
+	const auto format_utf16 = maybe_parse_utfheader(line)
 		                          ? static_cast<String_ref_fn*>([](std::string& s)
 		                          {
 			                          s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
 		                          })
 		                          : static_cast<String_ref_fn*>([](std::string&) {});
 
-	std::string line;
-	const std::string_view version_prefix = "osu file format v";
-
 	const auto seek_version_string = [&]
 	{
-		while(std::getline(file_, line)){
+		const std::string_view version_prefix = "osu file format v";
+		do{
 			format_utf16(line);
 			if(const auto pos = line.find(version_prefix);
 				pos != std::string::npos){
-				return pos;
+				return pos + version_prefix.length();
 			}
-		}
+		} while(std::getline(file, line));
 		return std::string::npos;
 	};
 
@@ -375,8 +378,8 @@ std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
 		return std::nullopt;
 	} else{
 		const std::string_view number_string = {
-			line.data() + prefix_pos + version_prefix.length(),
-			line.length() - version_prefix.length() - prefix_pos
+			line.data() + prefix_pos,
+			line.length() - prefix_pos
 		};
 
 		if(const auto ec = std::from_chars(number_string.data(),
@@ -386,7 +389,7 @@ std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse_impl()
 		}
 	}
 
-	while(std::getline(file_, line)){
+	while(std::getline(file, line)){
 		format_utf16(line);
 		trim(line);
 
