@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 message(Cmake Version: ${CMAKE_VERSION})
 
-project(osuReader VERSION 0.0.0 LANGUAGES CXX)
+project(osuReader VERSION 0.1.0 LANGUAGES CXX)
 
 if (MSVC)
     add_compile_options(/W4)
