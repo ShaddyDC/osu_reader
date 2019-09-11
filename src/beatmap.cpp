@@ -223,23 +223,21 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	std::for_each(tokens.begin(), tokens.end(), ltrim_view);
 
 	Beatmap_file::Timing_point point{};
-	int v0;
-	parse_value(tokens[0], v0);
-	point.time = std::chrono::milliseconds{ v0 };
-	float v1;
-	parse_value(tokens[1], v1);
-	if(v1 < 0){
+	parse_value(tokens[0], point.time);
+	float bpm_value;
+	parse_value(tokens[1], bpm_value);
+	if(bpm_value < 0){
 		point.inheritable           = false;
 		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(), beatmap_.timing_points.crend(),
 		                                           [](auto p) { return p.inheritable; });
 		if(last_uninherited != beatmap_.timing_points.crend()){
 			point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(
-				0.01f * (-v1) * last_uninherited->beat_duration);
+				0.01f * (-bpm_value) * last_uninherited->beat_duration);
 		}
 	} else{
 		point.inheritable = true;
 		using namespace std::chrono_literals;
-		point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(v1 * 1ms);
+		point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(bpm_value * 1ms);
 	}
 	parse_value(tokens[2], point.meter);
 	parse_value(tokens[3], point.sample_set);
@@ -300,11 +298,8 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 void osu::Beatmap_parser::parse_spinner(const std::vector<std::string_view>& tokens) {
 	if(tokens.size() < 6) return;
 	Spinner spinner{};
-	auto time = 0;
-	parse_value(tokens[2], time);
-	spinner.start = std::chrono::milliseconds{ time };
-	parse_value(tokens[5], time);
-	spinner.end = std::chrono::milliseconds{ time };
+	parse_value(tokens[2], spinner.start);
+	parse_value(tokens[5], spinner.end);
 	beatmap_.spinners.push_back(spinner);
 }
 
