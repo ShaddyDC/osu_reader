@@ -3,24 +3,24 @@ message(Cmake Version: ${CMAKE_VERSION})
 
 project(osuReader VERSION 0.1.1 LANGUAGES CXX)
 
-if (MSVC)
-    add_compile_options(/W4)
-else()
-    add_compile_options(-Wall -Wextra -pedantic)
-endif()
-
 add_library(osuReader 
 	src/beatmap.cpp
 	src/string_stuff.cpp
 )
 
-add_library(osuReader::osuReader ALIAS osuReader)
+target_compile_options(osuReader PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+            -Wall -Wextra -pedantic>
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /W4>)
 
 set_target_properties(osuReader PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
+
+add_library(osuReader::osuReader ALIAS osuReader)
 
 target_include_directories(osuReader 
 	PUBLIC
