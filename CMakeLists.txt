@@ -23,11 +23,12 @@ set_target_properties(osuReader PROPERTIES
 add_library(osuReader::osuReader ALIAS osuReader)
 
 target_include_directories(osuReader 
-	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:include>
     PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/src
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	SYSTEM INTERFACE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+		$<INSTALL_INTERFACE:include>
 )
 
 install(TARGETS osuReader EXPORT osuReaderTargets
