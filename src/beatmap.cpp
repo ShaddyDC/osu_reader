@@ -2,90 +2,37 @@
 #include "string_stuff.h"
 #include <charconv>
 #include "util.h"
-#include <map>
+#include <array>
 #include <variant>
 #include <fstream>
 #include "parse_string.h"
 
-using Beatmap_types = std::variant<int*, float*, bool*, std::string*,
-                                   std::chrono::milliseconds*, std::filesystem::path*, std::uint8_t*, Gamemode*,
-                                   std::vector<std::chrono::milliseconds>*, std::vector<std::string>*>;
+using Beatmap_types = std::variant<int osu::Beatmap_file::*, float osu::Beatmap_file::*, bool osu::Beatmap_file::*,
+                                   std::string osu::Beatmap_file::*, std::chrono::milliseconds osu::Beatmap_file::*,
+                                   std::filesystem::path osu::Beatmap_file::*, std::uint8_t osu::Beatmap_file::*,
+                                   Gamemode osu::Beatmap_file::*,
+                                   std::vector<std::chrono::milliseconds> osu::Beatmap_file::*,
+                                   std::vector<std::string> osu::Beatmap_file::*>;
 
-struct osu::Beatmap_parser::Map {
-	std::map<std::string_view, Beatmap_types> map;
-};
+using Beatmap_match_pair = std::pair<const std::string_view, Beatmap_types>;
 
-void if_found_parse(const std::map<std::string_view, Beatmap_types>& map, 
-	const std::string_view element,	const std::string_view value_string)
+template<std::size_t N>
+void if_found_parse(const std::array<Beatmap_match_pair, N>& map,
+                    const std::string_view line_element_string, const std::string_view value_string,
+                    osu::Beatmap_file& bm)
 {
-	if (const auto match = map.find(rtrim_view(element));
-		match != map.end()) {
-		std::visit([&value_string](const auto& e)
+	if(const auto match = std::find_if(map.cbegin(), map.cend(),
+	                                   [&line_element_string,
+		                                   line_element = ltrim_view(line_element_string)](const auto& e)
+	                                   {
+		                                   return e.first == line_element_string;
+	                                   });
+		match != map.cend()){
+		std::visit([&value_string, &bm](const auto& e)
 		{
-			parse_value(ltrim_view(value_string), *e);
+			parse_value(ltrim_view(value_string), bm.*e);
 		}, match->second);
 	}
-}
-
-osu::Beatmap_parser::Beatmap_parser()
-	: general_matcher_{ new Map() }, editor_matcher_{ new Map() },
-	metadata_matcher_{ new Map() }, difficulty_matcher_{ new Map() }
-{
-	*general_matcher_ = Map{ {
-			{ "AudioFilename",&beatmap_.audio_file },
-			{ "AudioLeadIn", &beatmap_.audio_lead_in },
-			{ "PreviewTime", &beatmap_.preview_time },
-			{ "Countdown", &beatmap_.countdown },
-			{ "SampleSet", &beatmap_.sample_set },
-			{ "StackLeniency", &beatmap_.stack_leniency },
-			{ "Mode", &beatmap_.mode },
-			{ "LetterboxInBreaks", &beatmap_.letterbox_in_breaks },
-			{ "StoryFireInFront", &beatmap_.story_fire_in_front },
-			{ "SkinPreference", &beatmap_.skin_preference },
-			{ "EpilepsyWarning", &beatmap_.epilepsy_warning },
-			{ "CountdownOffset", &beatmap_.countdown_offset },
-			{ "WidescreenStoryboard", &beatmap_.widescreen_storyboard },
-			{ "SpecialStyle", &beatmap_.special_style },
-			{ "UseSkinSprites", &beatmap_.use_skin_sprites },
-	} };
-
-	*editor_matcher_ = Map{ {
-		{ "Bookmarks", &beatmap_.bookmarks },
-		{ "DistanceSpacing", &beatmap_.distance_spacing },
-		{ "BeatDivisor", &beatmap_.beat_divisor },
-		{ "GridSize", &beatmap_.grid_size },
-		{ "TimelineZoom", &beatmap_.timeline_zoom },
-	} };
-
-	*metadata_matcher_ = Map{ {
-		{ "Title", &beatmap_.title },
-		{ "TitleUnicode", &beatmap_.title_unicode },
-		{ "Artist", &beatmap_.artist },
-		{ "ArtistUnicode", &beatmap_.artist_unicode },
-		{ "Creator", &beatmap_.creator },
-		{ "Version", &beatmap_.difficulty_name },
-		{ "Source", &beatmap_.source },
-		{ "Tags", &beatmap_.tags },
-		{ "BeatmapID", &beatmap_.beatmap_id },
-		{ "BeatmapSetID", &beatmap_.beatmap_set_id },
-	} };
-
-	*difficulty_matcher_ = Map{ {
-		{ "HPDrainRate", &beatmap_.hp },
-		{ "CircleSize", &beatmap_.cs },
-		{ "OverallDifficulty", &beatmap_.od },
-		{ "ApproachRate", &beatmap_.ar },
-		{ "SliderMultiplier", &beatmap_.slider_multiplier },
-		{ "SliderTickRate ", &beatmap_.slider_tick_rate },
-	} };
-}
-
-osu::Beatmap_parser::~Beatmap_parser()
-{
-	delete general_matcher_;
-	delete editor_matcher_;
-	delete metadata_matcher_;
-	delete difficulty_matcher_;
 }
 
 std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesystem::path& file)
@@ -95,34 +42,82 @@ std::optional<osu::Beatmap_file> osu::Beatmap_parser::parse(const std::filesyste
 
 void osu::Beatmap_parser::parse_general(const std::string_view line)
 {
+	static constexpr std::array<Beatmap_match_pair, 15> matcher{
+		Beatmap_match_pair{ "AudioFilename", &Beatmap_file::audio_file },
+		Beatmap_match_pair{ "AudioLeadIn", &Beatmap_file::audio_lead_in },
+		Beatmap_match_pair{ "PreviewTime", &Beatmap_file::preview_time },
+		Beatmap_match_pair{ "Countdown", &Beatmap_file::countdown },
+		Beatmap_match_pair{ "SampleSet", &Beatmap_file::sample_set },
+		Beatmap_match_pair{ "StackLeniency", &Beatmap_file::stack_leniency },
+		Beatmap_match_pair{ "Mode", &Beatmap_file::mode },
+		Beatmap_match_pair{ "LetterboxInBreaks", &Beatmap_file::letterbox_in_breaks },
+		Beatmap_match_pair{ "StoryFireInFront", &Beatmap_file::story_fire_in_front },
+		Beatmap_match_pair{ "SkinPreference", &Beatmap_file::skin_preference },
+		Beatmap_match_pair{ "EpilepsyWarning", &Beatmap_file::epilepsy_warning },
+		Beatmap_match_pair{ "CountdownOffset", &Beatmap_file::countdown_offset },
+		Beatmap_match_pair{ "WidescreenStoryboard", &Beatmap_file::widescreen_storyboard },
+		Beatmap_match_pair{ "SpecialStyle", &Beatmap_file::special_style },
+		Beatmap_match_pair{ "UseSkinSprites", &Beatmap_file::use_skin_sprites },
+	};
+
 	const auto tokens = split(line, ':');
 	if(tokens.size() != 2) return;
 
-	if_found_parse(general_matcher_->map, tokens[0], tokens[1]);
+	if_found_parse(matcher, tokens[0], tokens[1], beatmap_);
 }
 
 void osu::Beatmap_parser::parse_editor(std::string_view line)
 {
+	static constexpr std::array<Beatmap_match_pair, 5> matcher{
+		Beatmap_match_pair{ "Bookmarks", &Beatmap_file::bookmarks },
+		Beatmap_match_pair{ "DistanceSpacing", &Beatmap_file::distance_spacing },
+		Beatmap_match_pair{ "BeatDivisor", &Beatmap_file::beat_divisor },
+		Beatmap_match_pair{ "GridSize", &Beatmap_file::grid_size },
+		Beatmap_match_pair{ "TimelineZoom", &Beatmap_file::timeline_zoom },
+	};
+
 	const auto tokens = split(line, ':');
 	if(tokens.size() != 2) return;
 
-	if_found_parse(editor_matcher_->map, tokens[0], tokens[1]);
+	if_found_parse(matcher, tokens[0], tokens[1], beatmap_);
 }
 
 void osu::Beatmap_parser::parse_metadata(std::string_view line)
 {
+	static constexpr std::array<Beatmap_match_pair, 10> matcher{
+		Beatmap_match_pair{ "Title", &Beatmap_file::title },
+		Beatmap_match_pair{ "TitleUnicode", &Beatmap_file::title_unicode },
+		Beatmap_match_pair{ "Artist", &Beatmap_file::artist },
+		Beatmap_match_pair{ "ArtistUnicode", &Beatmap_file::artist_unicode },
+		Beatmap_match_pair{ "Creator", &Beatmap_file::creator },
+		Beatmap_match_pair{ "Version", &Beatmap_file::difficulty_name },
+		Beatmap_match_pair{ "Source", &Beatmap_file::source },
+		Beatmap_match_pair{ "Tags", &Beatmap_file::tags },
+		Beatmap_match_pair{ "BeatmapID", &Beatmap_file::beatmap_id },
+		Beatmap_match_pair{ "BeatmapSetID", &Beatmap_file::beatmap_set_id },
+	};
+
 	const auto tokens = split(line, ':');
 	if(tokens.size() != 2) return;
 
-	if_found_parse(metadata_matcher_->map, tokens[0], tokens[1]);
+	if_found_parse(matcher, tokens[0], tokens[1], beatmap_);
 }
 
 void osu::Beatmap_parser::parse_difficulty(std::string_view line)
 {
+	static constexpr std::array<Beatmap_match_pair, 6> matcher{
+		Beatmap_match_pair{ "HPDrainRate", &Beatmap_file::hp },
+		Beatmap_match_pair{ "CircleSize", &Beatmap_file::cs },
+		Beatmap_match_pair{ "OverallDifficulty", &Beatmap_file::od },
+		Beatmap_match_pair{ "ApproachRate", &Beatmap_file::ar },
+		Beatmap_match_pair{ "SliderMultiplier", &Beatmap_file::slider_multiplier },
+		Beatmap_match_pair{ "SliderTickRate ", &Beatmap_file::slider_tick_rate },
+	};
+
 	const auto tokens = split(line, ':');
 	if(tokens.size() != 2) return;
 
-	if_found_parse(difficulty_matcher_->map, tokens[0], tokens[1]);
+	if_found_parse(matcher, tokens[0], tokens[1], beatmap_);
 }
 
 void osu::Beatmap_parser::parse_events(std::string_view line)
@@ -233,8 +228,8 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 
 	auto sub_tokens = split(tokens[slider_data], '|');
 	if(sub_tokens.size() < 2) return; // Format: B|380:120|332:96|332:96|304:124
-	std::transform(sub_tokens.begin(), sub_tokens.end(), 
-		sub_tokens.begin(), ltrim_view);
+	std::transform(sub_tokens.begin(), sub_tokens.end(),
+	               sub_tokens.begin(), ltrim_view);
 
 	const auto valid_slider_type = [](const char slider_type)
 	{
