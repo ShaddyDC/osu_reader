@@ -1,7 +1,7 @@
 # osu_reader
 
 A c++17 library for consuming osu files with alrightish testing.  
-Probably doesn't throw.
+Probably doesn't throw as long as you're not running out of memory or something.
 
 ## Usage
 
