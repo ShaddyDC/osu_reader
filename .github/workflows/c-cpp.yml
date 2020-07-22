@@ -25,6 +25,9 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
       
     - name: Configure CMake
+      env:
+        CXX: g++-9
+        CC: gcc-9
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
