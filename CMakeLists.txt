@@ -44,5 +44,11 @@ install(EXPORT osuReaderTargets
 	DESTINATION lib/cmake/osuReader
 )
 
-enable_testing()
-add_subdirectory(tests)
+
+option(ENABLE_TESTING "Enable Test Builds" ON)
+
+if(ENABLE_TESTING)	
+	enable_testing()
+	add_subdirectory(tests)
+endif(ENABLE_TESTING)
+
