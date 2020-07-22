@@ -1,41 +1,85 @@
 #pragma once
-#include "beatmap_file.h"
+
+#include "gamemode.h"
+#include "hitobject.h"
+#include <cstdint>
+#include <filesystem>
+#include <string>
+#include <vector>
 #include <optional>
 
-namespace osu{
-	class Beatmap_parser{
-	public:
-		static std::optional<Beatmap_file> parse(const std::filesystem::path& file);
 
-	private:
-		enum class Section{
-			general,
-			editor,
-			metadata,
-			difficulty,
-			events,
-			timing_points,
-			colours,
-			hitobjects,
-			none
+namespace osu{
+	struct Beatmap{
+		static std::optional<Beatmap> from_file(const std::filesystem::path& file);
+
+		struct Timing_point{
+			std::chrono::milliseconds time;
+			std::chrono::microseconds beat_duration;
+			int meter;
+			int sample_set;
+			int sample_index;
+			int sample_volume;
+			bool inheritable;
+			bool kiai;
 		};
 
-		void parse_general(std::string_view line);
-		void parse_editor(std::string_view line);
-		void parse_metadata(std::string_view line);
-		void parse_difficulty(std::string_view line);
-		void parse_events(std::string_view line);
-		void parse_timing_points(std::string_view line);
-		void parse_circle(const std::vector<std::string_view>& tokens);
-		void parse_slider(const std::vector<std::string_view>& tokens);
-		void parse_spinner(const std::vector<std::string_view>& tokens);
-		void parse_hitobject(std::string_view line);
-		bool maybe_parse_utfheader(std::string_view line);
-		void parse_line(std::string_view line);
-		std::optional<Beatmap_file> parse_impl(const std::filesystem::path& file_path);
-		static Section parse_section(std::string_view line);
+		int version;
 
-		Beatmap_file beatmap_ = {};
-		Section section_      = Section::none;
+		// General
+		std::filesystem::path audio_file;
+		std::chrono::milliseconds audio_lead_in;
+		std::chrono::milliseconds preview_time;
+		uint_fast8_t countdown;
+		std::string sample_set;
+		float stack_leniency;
+		Gamemode mode;
+		bool letterbox_in_breaks;
+		bool story_fire_in_front;
+		std::string skin_preference;
+		bool epilepsy_warning;
+		int countdown_offset;
+		bool widescreen_storyboard;
+		bool special_style;
+		bool use_skin_sprites;
+
+		// Editor
+		std::vector<std::chrono::milliseconds> bookmarks;
+		float distance_spacing;
+		int beat_divisor;
+		int grid_size;
+		float timeline_zoom;
+
+		// Metadata
+		std::string title;
+		std::string title_unicode;
+		std::string artist;
+		std::string artist_unicode;
+		std::string creator;
+		std::string difficulty_name;
+		std::string source;
+		std::vector<std::string> tags;
+		int beatmap_id;
+		int beatmap_set_id;
+
+		// Difficulty
+		float hp;
+		float cs;
+		float od;
+		float ar;
+		float slider_multiplier = 1.4f;
+		float slider_tick_rate  = 1.f;
+
+		// Events
+		std::filesystem::path background;
+		std::vector<std::pair<std::chrono::milliseconds, std::chrono::milliseconds>> breaks;
+
+		// Timing Points
+		std::vector<Timing_point> timing_points;
+
+		// Hitobjects
+		std::vector<Hitcircle> circles;
+		std::vector<Slider> sliders;
+		std::vector<Spinner> spinners;
 	};
 }

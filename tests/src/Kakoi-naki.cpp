@@ -5,7 +5,7 @@ using namespace std::chrono_literals;
 
 TEST_CASE("Kakoi-naki")
 {
-	const auto bm_e = osu::Beatmap_parser::parse(
+	const auto bm_e = osu::Beatmap::from_file(
 		"res/Buta-Otome - Kakoi-naki Yo wa Ichigo no Tsukikage (BarkingMadDog) [this map is so bad cuz overmapping].osu");
 
 	REQUIRE(bm_e.has_value());

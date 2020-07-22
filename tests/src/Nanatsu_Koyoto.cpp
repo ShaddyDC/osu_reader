@@ -5,7 +5,7 @@ using namespace std::chrono_literals;
 
 TEST_CASE("Nanatsu Koyoto")
 {
-	const auto bm_e = osu::Beatmap_parser::parse("res/A.SAKA - Nanatsu Koyoto (ailv) [Extra].osu");
+	const auto bm_e = osu::Beatmap::from_file("res/A.SAKA - Nanatsu Koyoto (ailv) [Extra].osu");
 
 	REQUIRE(bm_e.has_value());
 

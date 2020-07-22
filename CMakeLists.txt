@@ -5,6 +5,7 @@ project(osuReader VERSION 0.1.1 LANGUAGES CXX)
 
 add_library(osuReader 
 	src/beatmap.cpp
+	src/beatmap_parser.cpp
 	src/string_stuff.cpp
 )
 
