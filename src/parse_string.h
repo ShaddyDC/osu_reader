@@ -13,6 +13,19 @@ void parse_value(std::string_view value_string, Type& value)
 	std::from_chars(value_string.data(), value_string.data() + value_string.length(), value);
 }
 
+// TODO: remove these when floating point from_chars is more widely supported
+template<>
+inline void parse_value<>(std::string_view value_string, float& value)
+{
+	value = std::stof(std::string{ value_string });
+}
+
+template<>
+inline void parse_value<>(std::string_view value_string, double& value)
+{
+	value = std::stod(std::string{ value_string });
+}
+
 template<>
 inline void parse_value<>(std::string_view value_string, bool& value)
 {

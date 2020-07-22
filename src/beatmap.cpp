@@ -247,10 +247,18 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 
 	std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.points), [](auto t)
 	{
-		Point point{};
-		const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
-		std::from_chars(pos + 1, t.data() + t.length(), point.y);
-		return point;
+		#if false
+			Point point{};
+			const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
+			std::from_chars(pos + 1, t.data() + t.length(), point.y);
+			return point;
+		#else	// TODO: remove when from_chars is more widely supported
+			Point point{};
+			std::size_t pos = 0;
+			point.x = std::stof(&t.front(), &pos);
+			point.y = std::stof(&t.front() + pos + 1, nullptr);
+			return point;
+		#endif
 	});
 	beatmap_.sliders.push_back(slider);
 }
