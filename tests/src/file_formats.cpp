@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 #include <osu_reader/beatmap.h>
+#include "file_string.h"
 
 TEST_CASE("No Beatmap")
 {
@@ -10,8 +11,11 @@ TEST_CASE("No Beatmap")
 
 TEST_CASE("Empty Line Beginning")
 {
-	const auto bm_e = osu::Beatmap::from_file(
-		"res/LamazeP - Koi no Program Hatsudou (feat. Hatsune Miku) (Sonnyc) [Euny's Hard].osu");
+	static constexpr const char* filename = "res/LamazeP - Koi no Program Hatsudou (feat. Hatsune Miku) (Sonnyc) [Euny's Hard].osu";
+	const auto bm_e = GENERATE(
+		osu::Beatmap::from_file(filename),
+		osu::Beatmap::from_string(file_string(filename))
+	);
 
 	REQUIRE(bm_e.has_value());
 	REQUIRE(bm_e->version == 14);
@@ -19,7 +23,11 @@ TEST_CASE("Empty Line Beginning")
 
 TEST_CASE("utf8")
 {
-	const auto bm_e = osu::Beatmap::from_file("res/Qrispy Joybox feat.mao - Umeyukiyo (LKs) [ampzz's Hard].osu");
+	static constexpr const char* filename = "res/Qrispy Joybox feat.mao - Umeyukiyo (LKs) [ampzz's Hard].osu";
+	const auto bm_e = GENERATE(
+		osu::Beatmap::from_file(filename),
+		osu::Beatmap::from_string(file_string(filename))
+	);
 
 	REQUIRE(bm_e.has_value());
 	REQUIRE(bm_e->version == 12);
@@ -27,7 +35,11 @@ TEST_CASE("utf8")
 
 TEST_CASE("utf16")
 {
-	const auto bm_e = osu::Beatmap::from_file("res/An - Necro Fantasia-An remix- (captin1) [Normal].osu");
+	static constexpr const char* filename = "res/An - Necro Fantasia-An remix- (captin1) [Normal].osu";
+	const auto bm_e = GENERATE(
+		osu::Beatmap::from_file(filename),
+		osu::Beatmap::from_string(file_string(filename))
+	);
 
 	REQUIRE(bm_e.has_value());
 	REQUIRE(bm_e->version == 14);

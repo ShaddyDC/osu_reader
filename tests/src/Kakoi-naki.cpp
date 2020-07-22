@@ -1,12 +1,17 @@
 #include <catch2/catch.hpp>
 #include <osu_reader/beatmap.h>
+#include "file_string.h"
 
 using namespace std::chrono_literals;
 
 TEST_CASE("Kakoi-naki")
 {
-	const auto bm_e = osu::Beatmap::from_file(
-		"res/Buta-Otome - Kakoi-naki Yo wa Ichigo no Tsukikage (BarkingMadDog) [this map is so bad cuz overmapping].osu");
+	static constexpr const auto filename = 
+		"res/Buta-Otome - Kakoi-naki Yo wa Ichigo no Tsukikage (BarkingMadDog) [this map is so bad cuz overmapping].osu";
+	const auto bm_e = GENERATE(
+		osu::Beatmap::from_file(filename),
+		osu::Beatmap::from_string(file_string(filename))
+	);
 
 	REQUIRE(bm_e.has_value());
 
