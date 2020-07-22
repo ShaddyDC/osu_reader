@@ -1,5 +1,11 @@
 
-find_package(Catch2 REQUIRED)
+find_package(Catch2 QUIET)
+
+if(NOT Catch2_FOUND)
+    add_subdirectory(Catch2 EXCLUDE_FROM_ALL)
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Catch2/contrib)
+endif(NOT Catch2_FOUND)
+
 
 add_executable(osuReaderTests src/main.cpp
 	src/Kakoi-naki.cpp
