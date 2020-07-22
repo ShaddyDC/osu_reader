@@ -18,6 +18,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Install catch2
+      run: sudo apt-get install catch2
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
