@@ -4,7 +4,6 @@
 #include "util.h"
 #include <array>
 #include <variant>
-#include <fstream>
 #include "parse_string.h"
 
 using Beatmap_types = std::variant<int osu::Beatmap::*, float osu::Beatmap::*, bool osu::Beatmap::*,
@@ -339,16 +338,14 @@ void osu::Beatmap_parser::parse_line(const std::string_view line)
 	else if(section_ == Section::hitobjects) parse_hitobject(line);
 }
 
-std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::filesystem::path& file_path)
+std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<std::optional<std::string>()>& line_provider)
 {
-	std::ifstream file{ file_path };
-	if(!file.is_open()) return std::nullopt;
+	std::optional<std::string> line = line_provider();
 
-	std::string line;
-	std::getline(file, line);
+	if(!line) return std::nullopt;
 
 	using String_ref_fn = void(std::string&);
-	const auto format_utf16 = maybe_parse_utfheader(line)
+	const auto format_utf16 = maybe_parse_utfheader(*line)
 		                          ? static_cast<String_ref_fn*>([](std::string& s)
 		                          {
 			                          s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
@@ -359,12 +356,13 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::filesyste
 	{
 		const std::string_view version_prefix = "osu file format v";
 		do{
-			format_utf16(line);
-			if(const auto pos = line.find(version_prefix);
+			format_utf16(*line);
+			if(const auto pos = line->find(version_prefix);
 				pos != std::string::npos){
 				return pos + version_prefix.length();
 			}
-		} while(std::getline(file, line));
+			line = line_provider();
+		} while(line);
 		return std::string::npos;
 	};
 
@@ -373,8 +371,8 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::filesyste
 		return std::nullopt;
 	} else{
 		const std::string_view number_string = {
-			line.data() + prefix_pos,
-			line.length() - prefix_pos
+			line->data() + prefix_pos,
+			line->length() - prefix_pos
 		};
 
 		if(const auto ec = std::from_chars(number_string.data(),
@@ -384,11 +382,13 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::filesyste
 		}
 	}
 
-	while(std::getline(file, line)){
-		format_utf16(line);
-		trim(line);
+	line = line_provider();
+	while(line){
+		format_utf16(*line);
+		trim(*line);
 
-		parse_line(line);
+		parse_line(*line);
+		line = line_provider();
 	}
 
 	return beatmap_;

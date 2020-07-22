@@ -11,7 +11,8 @@
 
 namespace osu{
 	struct Beatmap{
-		static std::optional<Beatmap> from_file(const std::filesystem::path& file);
+		static std::optional<Beatmap> from_file(const std::filesystem::path& file_path);
+		static std::optional<Beatmap> from_string(const std::string_view beatmap_content);
 
 		struct Timing_point{
 			std::chrono::milliseconds time;

@@ -1,11 +1,12 @@
 #pragma once
 #include "beatmap.h"
 #include <optional>
+#include <functional>
 
 namespace osu{
 	class Beatmap_parser{
 	public:
-		std::optional<Beatmap> parse_impl(const std::filesystem::path& file_path);
+		std::optional<Beatmap> parse_impl(const std::function<std::optional<std::string>()>& line_provider);
 	private:
 		enum class Section{
 			general,
