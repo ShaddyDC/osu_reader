@@ -1,5 +1,7 @@
 # osu_reader
 
+![C/C++ CI](https://github.com/ShaddyDC/osu_reader/workflows/C/C++%20CI/badge.svg)
+
 A c++17 library for consuming osu files with alrightish testing.
 
 ## Usage
