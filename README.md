@@ -1,13 +1,13 @@
 # osu_reader
 
-A c++17 library for consuming osu files with alrightish testing.  
-Probably doesn't throw as long as you're not running out of memory or something.
+A c++17 library for consuming osu files with alrightish testing.
 
 ## Usage
 
 ```cpp
 #include <osu_reader/beatmap.h>
-const auto bm_optional = osu::Beatmap_parser::parse("path/to/beatmap.osu");
+const auto bm_optional = osu::Beatmap::from_file("path/to/beatmap.osu");
+// Alternatively: osu::Beatmap::from_string(beatmap_string);
 if(!bm_optional) handler_for_beatmap_not_found_or_however_you_deal_with_this_case();
 else{
     const auto beatmap = *bm_optional;
@@ -19,7 +19,7 @@ Failing to read files altogether, i.e. the file couldn't be opened or the beatma
 
 ## Installation
 
-Recommended usage is to add the library as a submodule or clone it into a subdirectory of your project and to consume it with cmake by calling `add_subdirectory(yourSubdirectory)`. You can then add it to your application with `target_link_libraries(yourApplication PRIVATE osuReader::osuReader)`.  
+Recommended usage is to add the library as a submodule or clone it into a subdirectory of your project and to consume it with cmake by calling `add_subdirectory(osu_reader)`. You can then add it to your application with `target_link_libraries(yourApplication PRIVATE osuReader::osuReader)`.  
 Maybe it will be added to other package managers in the future if it is more mature.
 
 Running the tests requires [Catch2](https://github.com/catchorg/Catch2/). Installing it via [vcpkg](https://github.com/Microsoft/vcpkg/) is supported.
