@@ -1,5 +1,5 @@
 #include "osu_reader/beatmap.h"
-#include "osu_reader/beatmap_parser.h"
+#include "beatmap_parser.h"
 
 #include <fstream>
 

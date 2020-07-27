@@ -1,4 +1,4 @@
-#include "osu_reader/beatmap_parser.h"
+#include "beatmap_parser.h"
 #include "string_stuff.h"
 #include <charconv>
 #include "util.h"

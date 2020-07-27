@@ -1,5 +1,5 @@
 #pragma once
-#include "beatmap.h"
+#include "osu_reader/beatmap.h"
 #include <optional>
 #include <functional>
 
