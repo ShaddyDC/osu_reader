@@ -213,13 +213,17 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 	};
 
 	if(tokens.size() < 8) return;
+
 	Slider slider{};
+
 	std::vector<Point> points;
 	points.push_back({ parse_value<float>(tokens[x]), parse_value<float>(tokens[y]) });
+
 	parse_value(tokens[time], slider.time);
 	parse_value(tokens[repeat], slider.repeat);
 	parse_value(tokens[length], slider.length);
 
+	// Parse slider type and points
 	auto sub_tokens = split(tokens[slider_data], '|');
 	if(sub_tokens.size() < 2) return; // Format: B|380:120|332:96|332:96|304:124
 	std::transform(sub_tokens.begin(), sub_tokens.end(),
@@ -255,6 +259,7 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 		#endif
 	});
 
+	// Turn points to slider segments
 	if(!points.empty()){
 		slider.points.emplace_back();
 		slider.points.back().push_back(points.front());
