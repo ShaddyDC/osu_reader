@@ -145,7 +145,7 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 		sample_set,
 		sample_index,
 		volume,
-		inheritable,
+		uninherited,
 		kiai
 	};
 	auto tokens = split(line, ',');
@@ -157,16 +157,16 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 
 	if(const auto bpm_value = parse_value<float>(tokens[duration]);
 		bpm_value < 0){
-		point.inheritable           = false;
+		point.uninherited           = false;
 		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(),
 		                                           beatmap_.timing_points.crend(),
-		                                           [](auto p) { return p.inheritable; });
+		                                           [](auto p) { return p.uninherited; });
 		if(last_uninherited != beatmap_.timing_points.crend()){
 			point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(
 				0.01f * (-bpm_value) * last_uninherited->beat_duration);
 		}
 	} else{
-		point.inheritable = true;
+		point.uninherited = true;
 		using namespace std::chrono_literals;
 		point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(bpm_value * 1ms);
 	}

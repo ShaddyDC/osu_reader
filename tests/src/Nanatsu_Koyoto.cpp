@@ -72,7 +72,7 @@ TEST_CASE("Nanatsu Koyoto")
 			CHECK(tm.sample_set == 2);
 			CHECK(tm.sample_index == 1);
 			CHECK(tm.sample_volume == 90);
-			CHECK(tm.inheritable);
+			CHECK(tm.uninherited);
 			CHECK(!tm.kiai);
 		}
 		{
@@ -84,7 +84,7 @@ TEST_CASE("Nanatsu Koyoto")
 			CHECK(tm.sample_set == 2);
 			CHECK(tm.sample_index == 1);
 			CHECK(tm.sample_volume == 90);
-			CHECK(!tm.inheritable);
+			CHECK(!tm.uninherited);
 			CHECK(tm.kiai);
 		}
 		{
@@ -96,7 +96,7 @@ TEST_CASE("Nanatsu Koyoto")
 			CHECK(tm.sample_set == 2);
 			CHECK(tm.sample_index == 1);
 			CHECK(tm.sample_volume == 90);
-			CHECK(!tm.inheritable);
+			CHECK(!tm.uninherited);
 			CHECK(!tm.kiai);
 		}
 	}
