@@ -14,6 +14,7 @@ add_executable(osuReaderTests src/main.cpp
 	src/file_formats.cpp
 	src/beatmap_util.cpp
 	src/timingpoints.cpp
+	src/string_stuff.cpp
 )
 
 target_link_libraries(osuReaderTests
