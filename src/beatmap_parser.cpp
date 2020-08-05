@@ -5,6 +5,7 @@
 #include <array>
 #include <variant>
 #include "parse_string.h"
+#include "timingpoints_helper.h"
 
 using Beatmap_types = std::variant<int osu::Beatmap::*, float osu::Beatmap::*, bool osu::Beatmap::*,
                                    std::string osu::Beatmap::*, std::chrono::milliseconds osu::Beatmap::*,
@@ -177,6 +178,7 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	parse_value(tokens[kiai], point.kiai);
 
 	beatmap_.timing_points.push_back(point);
+	current_timing_point_ = beatmap_.timing_points.cbegin();
 }
 
 void osu::Beatmap_parser::parse_circle(const std::vector<std::string_view>& tokens)
@@ -222,6 +224,14 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 	parse_value(tokens[time], slider.time);
 	parse_value(tokens[repeat], slider.repeat);
 	parse_value(tokens[length], slider.length);
+
+	// Calculate duration
+	if(current_timing_point_ == beatmap_.timing_points.cend()) return;
+	current_timing_point_ = next_timingpoint(current_timing_point_, beatmap_.timing_points.cend(), slider.time);
+
+	slider.duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+		slider.length / (beatmap_.slider_multiplier * 100.f) * current_timing_point_->beat_duration
+	);
 
 	// Parse slider type and points
 	auto sub_tokens = split(tokens[slider_data], '|');

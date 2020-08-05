@@ -6,6 +6,11 @@
 namespace osu{
 	class Beatmap_parser{
 	public:
+		// disable copies because of iterator
+		Beatmap_parser() = default;
+		Beatmap_parser(const Beatmap_parser&) = delete;
+		const Beatmap_parser& operator==(const Beatmap_parser&) = delete;
+
 		std::optional<Beatmap> parse_impl(const std::function<std::optional<std::string>()>& line_provider);
 	private:
 		enum class Section{
@@ -35,6 +40,9 @@ namespace osu{
 		static Section parse_section(std::string_view line);
 
 		Beatmap beatmap_ = {};
-		Section section_      = Section::none;
+		Section section_ = Section::none;
+
+		using Iterator_t = decltype(beatmap_.timing_points.cbegin());
+		Iterator_t current_timing_point_;
 	};
 }

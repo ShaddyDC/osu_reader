@@ -82,6 +82,7 @@ TEST_CASE("Kakoi-naki")
 		CHECK(s.type == osu::Slider::Slider_type::perfect);
 		CHECK(s.repeat == 2);
 		CHECK(s.length == 96.599997052002f);
+		CHECK(s.duration == 441ms);
 		CHECKED_IF(s.points.size() == 1){
 			CHECKED_IF(s.points[0].size() == 3){
 				CHECK(s.points[0][0].x == 260.f);

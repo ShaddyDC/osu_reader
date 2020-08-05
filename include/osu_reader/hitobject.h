@@ -32,6 +32,7 @@ namespace osu{
 		using Slider_segment = std::vector<Point>;
 
 		std::chrono::milliseconds time;
+		std::chrono::milliseconds duration;
 		Slider_type type;
 		std::vector<Slider_segment> points;
 		int repeat;
