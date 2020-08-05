@@ -6,7 +6,7 @@ TEST_CASE("Timingpoints find_next")
 {
     using namespace std::chrono_literals;
 
-    std::vector<osu::Beatmap::Timing_point> timingpoints{
+    std::vector<osu::Beatmap::Timingpoint> timingpoints{
         { 10000ms, std::chrono::microseconds{ static_cast<int>(333.33f * 1000.f) }, 4, 0, 0, 100, true, true },
         { 12000ms, std::chrono::microseconds{ static_cast<int>(200.f * 1000.f) }, 4, 0, 0, 100, false, true },
         { 15000ms, std::chrono::microseconds{ static_cast<int>(300.f * 1000.f) }, 4, 0, 0, 100, false, true },

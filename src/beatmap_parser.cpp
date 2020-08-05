@@ -137,7 +137,7 @@ void osu::Beatmap_parser::parse_events(std::string_view line)
 	}
 }
 
-void osu::Beatmap_parser::parse_timing_points(std::string_view line)
+void osu::Beatmap_parser::parse_timingpoints(std::string_view line)
 {
 	enum Timingpoint_tokens{
 		time,
@@ -153,16 +153,16 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	if(tokens.size() < 8) return;
 	std::transform(tokens.begin(), tokens.end(), tokens.begin(), ltrim_view);
 
-	Beatmap::Timing_point point{};
+	Beatmap::Timingpoint point{};
 	parse_value(tokens[time], point.time);
 
 	if(const auto bpm_value = parse_value<float>(tokens[duration]);
 		bpm_value < 0){
 		point.uninherited           = false;
-		const auto last_uninherited = std::find_if(beatmap_.timing_points.crbegin(),
-		                                           beatmap_.timing_points.crend(),
+		const auto last_uninherited = std::find_if(beatmap_.timingpoints.crbegin(),
+		                                           beatmap_.timingpoints.crend(),
 		                                           [](auto p) { return p.uninherited; });
-		if(last_uninherited != beatmap_.timing_points.crend()){
+		if(last_uninherited != beatmap_.timingpoints.crend()){
 			point.beat_duration = std::chrono::duration_cast<std::chrono::microseconds>(
 				0.01f * (-bpm_value) * last_uninherited->beat_duration);
 		}
@@ -177,8 +177,8 @@ void osu::Beatmap_parser::parse_timing_points(std::string_view line)
 	parse_value(tokens[volume], point.sample_volume);
 	parse_value(tokens[kiai], point.kiai);
 
-	beatmap_.timing_points.push_back(point);
-	current_timing_point_ = beatmap_.timing_points.cbegin();
+	beatmap_.timingpoints.push_back(point);
+	current_timingpoint_ = beatmap_.timingpoints.cbegin();
 }
 
 void osu::Beatmap_parser::parse_circle(const std::vector<std::string_view>& tokens)
@@ -226,11 +226,11 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 	parse_value(tokens[length], slider.length);
 
 	// Calculate duration
-	if(current_timing_point_ == beatmap_.timing_points.cend()) return;
-	current_timing_point_ = next_timingpoint(current_timing_point_, beatmap_.timing_points.cend(), slider.time);
+	if(current_timingpoint_ == beatmap_.timingpoints.cend()) return;
+	current_timingpoint_ = next_timingpoint(current_timingpoint_, beatmap_.timingpoints.cend(), slider.time);
 
 	slider.duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-		slider.length / (beatmap_.slider_multiplier * 100.f) * current_timing_point_->beat_duration
+		slider.length / (beatmap_.slider_multiplier * 100.f) * current_timingpoint_->beat_duration
 	);
 
 	// Parse slider type and points
@@ -362,7 +362,7 @@ void osu::Beatmap_parser::parse_line(const std::string_view line)
 	else if(section_ == Section::metadata) parse_metadata(line);
 	else if(section_ == Section::difficulty) parse_difficulty(line);
 	else if(section_ == Section::events) parse_events(line);
-	else if(section_ == Section::timing_points) parse_timing_points(line);
+	else if(section_ == Section::timingpoints) parse_timingpoints(line);
 	else if(section_ == Section::hitobjects) parse_hitobject(line);
 }
 
@@ -429,7 +429,7 @@ osu::Beatmap_parser::Section osu::Beatmap_parser::parse_section(std::string_view
 	if(line == "[Metadata]") return Section::metadata;
 	if(line == "[Difficulty]") return Section::difficulty;
 	if(line == "[Events]") return Section::events;
-	if(line == "[TimingPoints]") return Section::timing_points;
+	if(line == "[TimingPoints]") return Section::timingpoints;
 	if(line == "[Colours]") return Section::colours;
 	if(line == "[HitObjects]") return Section::hitobjects;
 	return Section::none;

@@ -62,9 +62,9 @@ TEST_CASE("Nanatsu Koyoto")
 	}
 
 	// Timing Points
-	CHECKED_IF(bm.timing_points.size() == 11){
+	CHECKED_IF(bm.timingpoints.size() == 11){
 		{
-			const auto tm = bm.timing_points[0];
+			const auto tm = bm.timingpoints[0];
 			CHECK(tm.time.count() == (267ms).count());
 			CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
 				count());
@@ -76,7 +76,7 @@ TEST_CASE("Nanatsu Koyoto")
 			CHECK(!tm.kiai);
 		}
 		{
-			const auto tm = bm.timing_points[1];
+			const auto tm = bm.timingpoints[1];
 			CHECK(tm.time.count() == (21600ms).count());
 			CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(277.777777777777ms).
 				count());
@@ -88,7 +88,7 @@ TEST_CASE("Nanatsu Koyoto")
 			CHECK(tm.kiai);
 		}
 		{
-			const auto tm = bm.timing_points[2];
+			const auto tm = bm.timingpoints[2];
 			CHECK(tm.time.count() == (43266ms).count());
 			CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(333.333333333333ms).
 				count());

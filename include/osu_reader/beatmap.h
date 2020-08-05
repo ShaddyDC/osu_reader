@@ -14,7 +14,7 @@ namespace osu{
 		static std::optional<Beatmap> from_file(const std::filesystem::path& file_path);
 		static std::optional<Beatmap> from_string(const std::string_view beatmap_content);
 
-		struct Timing_point{
+		struct Timingpoint{
 			std::chrono::milliseconds time;
 			std::chrono::microseconds beat_duration;
 			int meter;
@@ -76,7 +76,7 @@ namespace osu{
 		std::vector<std::pair<std::chrono::milliseconds, std::chrono::milliseconds>> breaks;
 
 		// Timing Points
-		std::vector<Timing_point> timing_points;
+		std::vector<Timingpoint> timingpoints;
 
 		// Hitobjects
 		std::vector<Hitcircle> circles;

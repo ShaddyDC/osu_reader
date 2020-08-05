@@ -19,7 +19,7 @@ namespace osu{
 			metadata,
 			difficulty,
 			events,
-			timing_points,
+			timingpoints,
 			colours,
 			hitobjects,
 			none
@@ -30,7 +30,7 @@ namespace osu{
 		void parse_metadata(std::string_view line);
 		void parse_difficulty(std::string_view line);
 		void parse_events(std::string_view line);
-		void parse_timing_points(std::string_view line);
+		void parse_timingpoints(std::string_view line);
 		void parse_circle(const std::vector<std::string_view>& tokens);
 		void parse_slider(const std::vector<std::string_view>& tokens);
 		void parse_spinner(const std::vector<std::string_view>& tokens);
@@ -42,7 +42,7 @@ namespace osu{
 		Beatmap beatmap_ = {};
 		Section section_ = Section::none;
 
-		using Iterator_t = decltype(beatmap_.timing_points.cbegin());
-		Iterator_t current_timing_point_;
+		using Iterator_t = decltype(beatmap_.timingpoints.cbegin());
+		Iterator_t current_timingpoint_;
 	};
 }

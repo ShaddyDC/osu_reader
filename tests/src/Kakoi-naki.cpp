@@ -55,9 +55,9 @@ TEST_CASE("Kakoi-naki")
 	CHECK(bm.background == "tochen.jpg");
 
 	// Timing Points
-	CHECK(bm.timing_points.size() == 39);
-	CHECKED_IF(bm.timing_points.size() > 1){
-		const auto tm = bm.timing_points[1];
+	CHECK(bm.timingpoints.size() == 39);
+	CHECKED_IF(bm.timingpoints.size() > 1){
+		const auto tm = bm.timingpoints[1];
 		CHECK(tm.time.count() == (4221ms).count());
 		CHECK(tm.beat_duration.count() == std::chrono::duration_cast<std::chrono::microseconds>(840.335ms).count());
 		CHECK(tm.meter == 4);
