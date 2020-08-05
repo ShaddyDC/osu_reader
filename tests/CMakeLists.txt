@@ -13,6 +13,7 @@ add_executable(osuReaderTests src/main.cpp
 	src/parse_all.cpp
 	src/file_formats.cpp
 	src/beatmap_util.cpp
+	src/timingpoints.cpp
 )
 
 target_link_libraries(osuReaderTests
@@ -24,6 +25,10 @@ set_target_properties(osuReaderTests PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
+)
+
+target_include_directories(osuReaderTests
+    PRIVATE $<TARGET_PROPERTY:osuReader::osuReader,INCLUDE_DIRECTORIES>
 )
 
 add_custom_command(
