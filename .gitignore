@@ -16,3 +16,5 @@ out/
 Folder.DotSettings.user
 build/
 .vscode/
+.idea/
+cmake-build-debug*
