@@ -31,7 +31,7 @@ namespace osu{
         Mods mods;
         std::string life_bar;
         std::chrono::system_clock::time_point time_stamp;
-        std::vector<std::byte> replay_compressed;
+        std::vector<char> replay_compressed;
         std::int64_t score_id;
     };
 }

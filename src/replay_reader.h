@@ -17,7 +17,7 @@ private:
     bool read_type(Gamemode& value);
     bool read_type(std::chrono::system_clock::time_point& value);
     std::optional<int> read_uleb128();
-    bool read_replaydata(std::vector<std::byte>& value);
+    bool read_replaydata(std::vector<char>& value);
 
     Provider& provider;
 };
@@ -77,9 +77,9 @@ bool Replay_reader<Provider>::read_type(std::string& value)
 
     const auto length = *length_opt;
     value.resize(length);
-    for(int i = 0; i < length; ++i) {
-        if(!read_type(value[i])) return false;  // TODO Bulk
-    }
+    const auto bytes = provider.read_bytes(length);
+    if(!bytes) return false;
+    value = std::string{ bytes->begin(), bytes->end() };
     return true;
 }
 
@@ -100,17 +100,15 @@ std::optional<int> Replay_reader<Provider>::read_uleb128()
 }
 
 template<typename Provider>
-bool Replay_reader<Provider>::read_replaydata(std::vector<std::byte>& value)
+bool Replay_reader<Provider>::read_replaydata(std::vector<char>& value)
 {
     const auto compressed_size_opt =  provider.template read_type<int>();
     if(!compressed_size_opt) return false;
 
     const auto compressed_size = *compressed_size_opt;
-    for(int i = 0; i < compressed_size; ++i) {
-        const auto v = provider.template read_type<std::uint8_t>();
-        if(!v) return false;
-        value.push_back(std::byte{ *v });
-    }
+    const auto data = provider.read_bytes(compressed_size);
+    if(!data) return false;
+    value = *data;
     return true;
 }
 
