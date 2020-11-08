@@ -31,7 +31,7 @@ namespace osu{
 		std::filesystem::path audio_file;
 		std::chrono::milliseconds audio_lead_in;
 		std::chrono::milliseconds preview_time;
-		uint_fast8_t countdown;
+		std::uint8_t countdown;
 		std::string sample_set;
 		float stack_leniency;
 		Gamemode mode;
