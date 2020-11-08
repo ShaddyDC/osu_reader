@@ -17,26 +17,35 @@ else{
 }
 ```
 
-Failing to read files altogether, i.e. the file couldn't be opened or the beatmap version couldn't be read, are handled by returning an empty optional. Other errors such as being unable to read a specific value are ignored altogether.
+```cpp
+#include <osu_reader/replay.h>
+// .value() throws on access if loading failed
+const auto replay = osu::Replay::from_file("path/to/replay.osr", true).value();
+print(replay.player_name);
+```
+
+Failing to parse files, i.e. the file couldn't be opened or the beatmap version couldn't be read, are handled by returning an empty optional. This also applies for malformed replay files. For beatmaps, other errors such as being unable to read a specific value are ignored altogether and the value will be in its default state.
 
 ## Installation
 
 Recommended usage is to add the library as a submodule or clone it into a subdirectory of your project and to consume it with cmake by calling `add_subdirectory(osu_reader)`. You can then add it to your application with `target_link_libraries(yourApplication PRIVATE osuReader::osuReader)`.  
-Maybe it will be added to other package managers in the future if it is more mature.
+Maybe it will be added to other package managers in the future if it is more mature.  
+**Note that the xz submodule is required to compile the code.** This is necessary to support replay frame extraction. This requirement may become optional in the future. 
+You can recursively download submodules with `git submodule update --init --recursive`
 
-Running the tests requires [Catch2](https://github.com/catchorg/Catch2/). Installing it via [vcpkg](https://github.com/Microsoft/vcpkg/) is supported.
+Running the tests requires [Catch2](https://github.com/catchorg/Catch2/). Installing it via [vcpkg](https://github.com/Microsoft/vcpkg/) is supported, although it is now also shipped with the project as a submodule.
 
 ## Completeness
 
 ### Implemented
 
 - `.osu` format (Mostly, missing colours and hit extras)
+- `.osr` format (Not thoroughly tested yet)
 
 ### Planned
 
-- `.osr` format
-- `osu!.db`
-- ???
+- `osu!.db` (maybe)
+- Matching replay clicks to hitobjects etc
 
 If there's anything missing you need, open an issue and I'll push it on the priority list. 
 
