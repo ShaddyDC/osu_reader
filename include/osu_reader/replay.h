@@ -11,8 +11,8 @@ namespace osu{
     using Mods = int;
 
     struct Replay{
-        static std::optional<Replay> from_file(const std::filesystem::path& file_path);
-        static std::optional<Replay> from_string(const std::string_view content);
+        [[nodiscard]] static std::optional<Replay> from_file(const std::filesystem::path& file_path);
+        [[nodiscard]] static std::optional<Replay> from_string(const std::string_view content);
 
         Gamemode mode;
         int game_version;
