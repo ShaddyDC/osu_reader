@@ -3,7 +3,9 @@ message(Cmake Version: ${CMAKE_VERSION})
 
 project(osuReader VERSION 0.1.1 LANGUAGES CXX)
 
-add_library(osuReader 
+add_subdirectory(libs/xz)
+
+add_library(osuReader
 	src/beatmap.cpp
 	src/beatmap_parser.cpp
 	src/string_stuff.cpp
@@ -21,6 +23,8 @@ set_target_properties(osuReader PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
+
+target_link_libraries(osuReader PRIVATE liblzma)
 
 add_library(osuReader::osuReader ALIAS osuReader)
 

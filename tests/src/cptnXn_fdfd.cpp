@@ -8,29 +8,64 @@ TEST_CASE("cptnXn_fdfd")
             "res/cptnXn - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2014-05-11) Osu.osr";
 
     const auto rp_e = GENERATE(
-            osu::Replay::from_file(filename),
-            osu::Replay::from_string(file_string(filename))
+            osu::Replay::from_file(filename, true),
+            osu::Replay::from_string(file_string(filename), true)
     );
 
     REQUIRE(rp_e);
     const auto& r = *rp_e;
 
-    REQUIRE(r.mode == Gamemode::osu);
-    REQUIRE(r.game_version == 20181231);
-    REQUIRE(r.map_hash == "da8aae79c8f3306b5d65ec951874a7fb");
-    REQUIRE(r.player_name == "cptnXn");
-    REQUIRE(r.replay_hash == "391edbb7774bfa13bd252d5b92c72637");
-    REQUIRE(r.count_300 == 1960);
-    REQUIRE(r.count_100 == 23);
-    REQUIRE(r.count_50 == 0);
-    REQUIRE(r.count_geki == 240);
-    REQUIRE(r.count_katsu == 11);
-    REQUIRE(r.count_miss == 0);
-    REQUIRE(r.score == 116845640);
-    REQUIRE(r.max_combo == 2384);
-    REQUIRE(r.full_combo == false);
-    REQUIRE(r.mods == 0);
+    CHECK(r.mode == Gamemode::osu);
+    CHECK(r.game_version == 20181231);
+    CHECK(r.map_hash == "da8aae79c8f3306b5d65ec951874a7fb");
+    CHECK(r.player_name == "cptnXn");
+    CHECK(r.replay_hash == "391edbb7774bfa13bd252d5b92c72637");
+    CHECK(r.count_300 == 1960);
+    CHECK(r.count_100 == 23);
+    CHECK(r.count_50 == 0);
+    CHECK(r.count_geki == 240);
+    CHECK(r.count_katsu == 11);
+    CHECK(r.count_miss == 0);
+    CHECK(r.score == 116845640);
+    CHECK(r.max_combo == 2384);
+    CHECK(r.full_combo == false);
+    CHECK(r.mods == 0);
 //    REQUIRE(r.life_bar == "");
 //    REQUIRE(r.time_stamp == 0);
-    REQUIRE(r.score_id == 1740197996);
+    CHECK(r.score_id == 1740197996);
+
+    CHECKED_IF(r.frames){
+        const auto frames = *r.frames;
+        CHECKED_IF(frames.size() == 21188){
+            CHECK(frames[0].time == 0);
+            CHECK(frames[0].x == 256);
+            CHECK(frames[0].y == -500);
+            CHECK(frames[0].state == 0);
+            CHECK(frames[1].time == -1);
+            CHECK(frames[1].x == 256);
+            CHECK(frames[1].y == -500);
+            CHECK(frames[1].state == 0);
+            CHECK(frames[3].time == -11);
+            CHECK(frames[3].x == 233.0667f);
+            CHECK(frames[3].y == 138.6667f);
+            CHECK(frames[3].state == 10);
+            CHECK(frames.back().x == 0);
+            CHECK(frames.back().y == 0);
+            CHECK(frames.back().state == 19467063);
+            CHECK((frames.end() - 2)->time == 264331);
+        }
+    }
+}
+
+TEST_CASE("replay without frames")
+{
+    static constexpr const auto filename =
+            "res/cptnXn - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2014-05-11) Osu.osr";
+
+    const auto rp_e = GENERATE(
+            osu::Replay::from_file(filename, false),
+            osu::Replay::from_string(file_string(filename), false)
+    );
+
+    REQUIRE(!rp_e->frames);
 }

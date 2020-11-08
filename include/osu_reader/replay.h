@@ -11,8 +11,14 @@ namespace osu{
     using Mods = int;
 
     struct Replay{
-        [[nodiscard]] static std::optional<Replay> from_file(const std::filesystem::path& file_path);
-        [[nodiscard]] static std::optional<Replay> from_string(const std::string_view content);
+        [[nodiscard]] static std::optional<Replay> from_file(const std::filesystem::path& file_path, bool parse_frames = false);
+        [[nodiscard]] static std::optional<Replay> from_string(const std::string_view content, bool parse_frames = false);
+
+        struct Replay_frame{
+            int time;
+            float x, y;
+            int state;
+        };
 
         Gamemode mode;
         int game_version;
@@ -32,6 +38,7 @@ namespace osu{
         std::string life_bar;
         std::chrono::system_clock::time_point time_stamp;
         std::vector<char> replay_compressed;
+        std::optional<std::vector<Replay_frame>> frames;
         std::int64_t score_id;
     };
 }

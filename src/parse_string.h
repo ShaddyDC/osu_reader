@@ -6,6 +6,7 @@
 #include "string_stuff.h"
 #include <filesystem>
 #include <vector>
+#include <charconv>
 
 template<typename Type>
 void parse_value(std::string_view value_string, Type& value)

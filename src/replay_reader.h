@@ -2,6 +2,9 @@
 
 #include <osu_reader/replay.h>
 #include <optional>
+#include <lzma.h>
+#include "string_stuff.h"
+#include "parse_string.h"
 
 template<typename Provider>
 class Replay_reader {
@@ -9,6 +12,7 @@ public:
     Replay_reader(Provider& provider): provider{ provider }{}
 
     std::optional<osu::Replay> parse_replay();
+    static std::optional<std::vector<osu::Replay::Replay_frame>> decode_frames(std::vector<char>& compressed);
 
 private:
     template<typename Type>
@@ -18,6 +22,7 @@ private:
     bool read_type(std::chrono::system_clock::time_point& value);
     std::optional<int> read_uleb128();
     bool read_replaydata(std::vector<char>& value);
+    static std::optional<std::string> lzma_decode(std::vector<char>& compressed);
 
     Provider& provider;
 };
@@ -130,4 +135,62 @@ bool Replay_reader<Provider>::read_type(std::chrono::system_clock::time_point& v
     return true;
 }
 
+template<typename Provider>
+std::optional<std::string> Replay_reader<Provider>::lzma_decode(std::vector<char>& compressed)
+{
+    if(compressed.empty()) return std::nullopt;
 
+    constexpr const auto buff_size = 4096;
+    char buffer[buff_size];
+    std::string output;
+
+    lzma_stream strm = LZMA_STREAM_INIT;
+    strm.next_in = reinterpret_cast<const std::uint8_t*>(compressed.data());
+    strm.avail_in = compressed.size();
+
+    if(lzma_auto_decoder(&strm, UINT64_MAX, LZMA_CHECK_CRC64) != LZMA_OK){
+        return std::nullopt;
+    }
+
+    lzma_ret res;
+    do {
+        strm.next_out = reinterpret_cast<uint8_t*>(buffer);
+        strm.avail_out = buff_size;
+        res = lzma_code(&strm, LZMA_FINISH);
+        if(strm.avail_out != buff_size) {
+            std::copy(std::begin(buffer), std::end(buffer) - strm.avail_out, std::back_inserter(output));
+        }
+    } while(res == LZMA_OK || res == LZMA_GET_CHECK);
+
+    if(res != LZMA_STREAM_END) return std::nullopt;
+
+    return output;
+}
+
+template<typename Provider>
+std::optional<std::vector<osu::Replay::Replay_frame>>
+Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
+{
+    const auto str_opt = lzma_decode(compressed);
+    if(!str_opt) return std::nullopt;
+
+    const auto str = *str_opt;
+    const auto lines = split(str, ',');
+    std::vector<osu::Replay::Replay_frame> frames;
+    frames.reserve(lines.size());
+
+    auto current_time = 0;
+    for(const auto line : lines){
+        const auto tokens = split(line, '|');
+        if(tokens.size() == 0) continue;
+        if(tokens.size() != 4) return std::nullopt;
+        current_time += parse_value<int>(tokens[0]);
+        frames.push_back({
+                                 current_time,
+                                 parse_value<float>(tokens[1]),
+                                 parse_value<float>(tokens[2]),
+                                 parse_value<int>(tokens[3]),
+                         });
+    }
+    return frames;
+}
