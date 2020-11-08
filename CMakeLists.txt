@@ -7,7 +7,8 @@ add_library(osuReader
 	src/beatmap.cpp
 	src/beatmap_parser.cpp
 	src/string_stuff.cpp
-)
+	src/replay.cpp
+	src/replay_reader.h)
 
 target_compile_options(osuReader PRIVATE
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
