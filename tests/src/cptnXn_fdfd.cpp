@@ -2,14 +2,20 @@
 #include <osu_reader/replay.h>
 #include "file_string.h"
 
+#ifdef ENABLE_LZMA
+constexpr const bool lzma_enabled = true;
+#else
+constexpr const bool lzma_enabled = false;
+#endif
+
 TEST_CASE("cptnXn_fdfd")
 {
     static constexpr const auto filename =
             "res/cptnXn - xi - FREEDOM DiVE [FOUR DIMENSIONS] (2014-05-11) Osu.osr";
 
     const auto rp_e = GENERATE(
-            osu::Replay::from_file(filename, true),
-            osu::Replay::from_string(file_string(filename), true)
+            osu::Replay::from_file(filename, lzma_enabled),
+            osu::Replay::from_string(file_string(filename), lzma_enabled)
     );
 
     REQUIRE(rp_e);
@@ -34,27 +40,34 @@ TEST_CASE("cptnXn_fdfd")
 //    REQUIRE(r.time_stamp == 0);
     CHECK(r.score_id == 1740197996);
 
-    CHECKED_IF(r.frames){
-        const auto frames = *r.frames;
-        CHECKED_IF(frames.size() == 21188){
-            CHECK(frames[0].time == 0);
-            CHECK(frames[0].x == 256);
-            CHECK(frames[0].y == -500);
-            CHECK(frames[0].state == 0);
-            CHECK(frames[1].time == -1);
-            CHECK(frames[1].x == 256);
-            CHECK(frames[1].y == -500);
-            CHECK(frames[1].state == 0);
-            CHECK(frames[3].time == -11);
-            CHECK(frames[3].x == 233.0667f);
-            CHECK(frames[3].y == 138.6667f);
-            CHECK(frames[3].state == 10);
-            CHECK(frames.back().x == 0);
-            CHECK(frames.back().y == 0);
-            CHECK(frames.back().state == 19467063);
-            CHECK((frames.end() - 2)->time == 264331);
+    if(lzma_enabled){
+        CHECKED_IF(r.frames){
+            const auto frames = *r.frames;
+            CHECKED_IF(frames.size() == 21188){
+                CHECK(frames[0].time == 0);
+                CHECK(frames[0].x == 256);
+                CHECK(frames[0].y == -500);
+                CHECK(frames[0].state == 0);
+                CHECK(frames[1].time == -1);
+                CHECK(frames[1].x == 256);
+                CHECK(frames[1].y == -500);
+                CHECK(frames[1].state == 0);
+                CHECK(frames[3].time == -11);
+                CHECK(frames[3].x == 233.0667f);
+                CHECK(frames[3].y == 138.6667f);
+                CHECK(frames[3].state == 10);
+                CHECK(frames.back().x == 0);
+                CHECK(frames.back().y == 0);
+                CHECK(frames.back().state == 19467063);
+                CHECK((frames.end() - 2)->time == 264331);
+            }
         }
     }
+    else{
+        WARN("Skipping LZMA data parsing and tests");
+        CHECK(r.frames->empty());
+    }
+
 }
 
 TEST_CASE("replay without frames")

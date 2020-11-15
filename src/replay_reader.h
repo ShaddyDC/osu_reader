@@ -6,6 +6,12 @@
 #include "string_stuff.h"
 #include "parse_string.h"
 
+#ifdef ENABLE_LZMA
+constexpr const bool lzma_enabled = true;
+#else
+constexpr const bool lzma_enabled = false;
+#endif
+
 template<typename Provider>
 class Replay_reader {
 public:
@@ -171,6 +177,8 @@ template<typename Provider>
 std::optional<std::vector<osu::Replay::Replay_frame>>
 Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
 {
+    if(!lzma_enabled) throw std::runtime_error{ "Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF" };
+
     const auto str_opt = lzma_decode(compressed);
     if(!str_opt) return std::nullopt;
 
