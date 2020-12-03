@@ -18,3 +18,7 @@ build/
 .vscode/
 .idea/
 cmake-build-debug*
+build
+*.egg-info
+dist
+pyshosu.cpython*
