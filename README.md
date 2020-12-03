@@ -35,6 +35,24 @@ You can recursively download submodules with `git submodule update --init --recu
 
 Running the tests requires [Catch2](https://github.com/catchorg/Catch2/). Installing it via [vcpkg](https://github.com/Microsoft/vcpkg/) is supported, although it is now also shipped with the project as a submodule.
 
+## Python Bindings
+
+This library supports usage in python.
+Simply install it by running `python setup.py install` in the project main directory.
+Note that it requires the pybind11 and xz submodules by default.
+You can run its tests with `python setup.py test`.
+
+```python
+import pyshosu
+
+bm = pyshosu.beatmap_file("path/to/replay.osr")
+
+print(bm.title)
+
+r = pyshosu.replay_file("path/to/beatmap.osu", True)
+print(r.player_name)
+```
+
 ## Completeness
 
 ### Implemented
