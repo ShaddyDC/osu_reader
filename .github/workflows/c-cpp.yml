@@ -28,5 +28,5 @@ jobs:
 
     - name: Test python bindings
       shell: bash
-      run: python -m pip install --upgrade wheel setuptools && python3 setup.py test
+      run: python3 -m pip install --upgrade wheel setuptools && python3 setup.py test
       
