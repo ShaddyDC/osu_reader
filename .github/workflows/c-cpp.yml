@@ -29,5 +29,5 @@ jobs:
     - name: Test python bindings
       working-directory: ${{runner.workspace}}
       shell: bash
-      run: rm -r build && ls && python --version && python setup.py test
+      run: rm -r build && ls && python3 --version && python3 setup.py test
       
