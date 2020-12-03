@@ -46,7 +46,6 @@ You can run its tests with `python setup.py test`.
 import pyshosu
 
 bm = pyshosu.beatmap_file("path/to/replay.osr")
-
 print(bm.title)
 
 r = pyshosu.replay_file("path/to/beatmap.osu", True)
