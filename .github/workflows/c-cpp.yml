@@ -28,6 +28,9 @@ jobs:
     
 
     - name: Test python bindings
+      env:
+        CXX: g++-9
+        CC: gcc-9
       shell: bash
       run: python3 -m pip install --upgrade wheel setuptools && python3 setup.py test
       
