@@ -174,7 +174,7 @@ PYBIND11_MODULE(pyshosu, m)
                  [](const std::filesystem::path& p) {
                      return "<std.filesystem.Path '" + p.string() + "'>";
                  });
-    ;
+
     py::implicitly_convertible<std::string, std::filesystem::path>();
 
     py::enum_<osu::Gamemode>(m, "Gamemode")

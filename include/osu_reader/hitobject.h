@@ -3,7 +3,7 @@
 #include <vector>
 
 namespace osu {
-    enum class Hitobject_type : uint_fast8_t {
+    enum class Hitobject_type : std::uint8_t {
         circle = 1,
         slider = 2,
         new_combo = 4,

@@ -55,7 +55,7 @@ template<typename Type>
 std::optional<Type> Binary_reader<std::string_view>::read_type()
 {
     if(index + sizeof(Type) > input.size()) return std::nullopt;
-    Type value = *reinterpret_cast<const Type*>(&(input.data()[index]));
+    Type value = *reinterpret_cast<const Type*>(&(input[index]));
     index += sizeof(Type);
     return value;
 }

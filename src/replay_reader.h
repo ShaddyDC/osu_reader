@@ -62,7 +62,7 @@ bool Replay_reader<Provider>::read_type(std::string& value)
     if(type.value_or(0) == 0) {
         value = "";
         return true;
-    };
+    }
 
     if(*type != 0x0b) return false;
     const auto length_opt = read_uleb128();
@@ -159,7 +159,7 @@ template<typename Provider>
 std::optional<std::vector<osu::Replay::Replay_frame>>
 Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
 {
-    if(!lzma_enabled) throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
+    if constexpr (!lzma_enabled) throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
 
     const auto str_opt = lzma_decode(compressed);
     if(!str_opt) return std::nullopt;
@@ -172,7 +172,7 @@ Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
     auto current_time = 0;
     for(const auto line : lines) {
         const auto tokens = split(line, '|');
-        if(tokens.size() == 0) continue;
+        if(tokens.empty()) continue;
         if(tokens.size() != 4) return std::nullopt;
         current_time += parse_value<int>(tokens[0]);
         frames.push_back({

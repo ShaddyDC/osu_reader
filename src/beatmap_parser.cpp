@@ -366,12 +366,11 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<
 
     if(!line) return std::nullopt;
 
-    using String_ref_fn = void(std::string&);
     const auto format_utf16 = maybe_parse_utfheader(*line)
-                                      ? static_cast<String_ref_fn*>([](std::string& s) {
+                                      ? [](std::string& s) {
                                             s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
-                                        })
-                                      : static_cast<String_ref_fn*>([](std::string&) {});
+                                        }
+                                      : [](std::string&) {};
 
     const auto seek_version_string = [&] {
         const std::string_view version_prefix = "osu file format v";
