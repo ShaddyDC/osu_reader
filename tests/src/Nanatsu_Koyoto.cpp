@@ -23,7 +23,7 @@ TEST_CASE("Nanatsu Koyoto")
 	CHECK(bm.countdown == 1);
 	CHECK(bm.sample_set == "Soft");
 	CHECK(bm.stack_leniency == 0.7f);
-	CHECK(bm.mode == Gamemode::osu);
+	CHECK(bm.mode == osu::Gamemode::osu);
 	CHECK(!bm.letterbox_in_breaks);
 	CHECK(bm.widescreen_storyboard);
 

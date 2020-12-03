@@ -10,7 +10,7 @@
 using Beatmap_types = std::variant<int osu::Beatmap::*, float osu::Beatmap::*, bool osu::Beatmap::*,
                                    std::string osu::Beatmap::*, std::chrono::milliseconds osu::Beatmap::*,
                                    std::filesystem::path osu::Beatmap::*, std::uint8_t osu::Beatmap::*,
-                                   Gamemode osu::Beatmap::*,
+                                   osu::Gamemode osu::Beatmap::*,
                                    std::vector<std::chrono::milliseconds> osu::Beatmap::*,
                                    std::vector<std::string> osu::Beatmap::*>;
 

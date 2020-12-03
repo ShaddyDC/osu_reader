@@ -45,11 +45,11 @@ inline void parse_value<>(std::string_view value_string, std::chrono::millisecon
 }
 
 template<>
-inline void parse_value<>(std::string_view value_string, Gamemode& value)
+inline void parse_value<>(std::string_view value_string, osu::Gamemode& value)
 {
 	auto v = 0;
 	parse_value(value_string, v);
-	value = static_cast<Gamemode>(value);
+	value = static_cast<osu::Gamemode>(value);
 }
 
 template<>

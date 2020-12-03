@@ -24,7 +24,7 @@ private:
     template<typename Type>
     bool read_type(Type& value);
     bool read_type(std::string& value);
-    bool read_type(Gamemode& value);
+    bool read_type(osu::Gamemode& value);
     bool read_type(std::chrono::system_clock::time_point& value);
     std::optional<int> read_uleb128();
     bool read_replaydata(std::vector<char>& value);
@@ -124,11 +124,11 @@ bool Replay_reader<Provider>::read_replaydata(std::vector<char>& value)
 }
 
 template<typename Provider>
-bool Replay_reader<Provider>::read_type(Gamemode& value)
+bool Replay_reader<Provider>::read_type(osu::Gamemode& value)
 {
     const auto value_opt = provider.template read_type<std::uint8_t>();
     if(!value_opt) return false;
-    value = static_cast<Gamemode>(*value_opt);
+    value = static_cast<osu::Gamemode>(*value_opt);
     return true;
 }
 

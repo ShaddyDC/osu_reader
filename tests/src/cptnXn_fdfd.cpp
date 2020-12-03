@@ -21,7 +21,7 @@ TEST_CASE("cptnXn_fdfd")
     REQUIRE(rp_e);
     const auto& r = *rp_e;
 
-    CHECK(r.mode == Gamemode::osu);
+    CHECK(r.mode == osu::Gamemode::osu);
     CHECK(r.game_version == 20181231);
     CHECK(r.map_hash == "da8aae79c8f3306b5d65ec951874a7fb");
     CHECK(r.player_name == "cptnXn");
