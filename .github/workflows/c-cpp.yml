@@ -37,10 +37,15 @@ jobs:
       shell: bash
       run: cmake --build . --config $BUILD_TYPE
       
-    - name: Test
+    - name: Test c++
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C $BUILD_TYPE
+
+    - name: Test python bindings
+      working-directory: ${{runner.workspace}}
+      shell: bash
+      run: rm -r build && python setup.py test
       
