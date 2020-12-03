@@ -20,6 +20,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: True
+    - uses: seanmiddleditch/gha-setup-ninja@master # Python compilation uses ninja atm
       
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
