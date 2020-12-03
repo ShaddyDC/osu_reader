@@ -1,6 +1,6 @@
+#include "file_string.h"
 #include <catch2/catch.hpp>
 #include <osu_reader/replay.h>
-#include "file_string.h"
 
 #ifdef ENABLE_LZMA
 constexpr const bool lzma_enabled = true;
@@ -15,8 +15,7 @@ TEST_CASE("cptnXn_fdfd")
 
     const auto rp_e = GENERATE(
             osu::Replay::from_file(filename, lzma_enabled),
-            osu::Replay::from_string(file_string(filename), lzma_enabled)
-    );
+            osu::Replay::from_string(file_string(filename), lzma_enabled));
 
     REQUIRE(rp_e);
     const auto& r = *rp_e;
@@ -36,38 +35,38 @@ TEST_CASE("cptnXn_fdfd")
     CHECK(r.max_combo == 2384);
     CHECK(r.full_combo == false);
     CHECK(r.mods == 0);
-//    REQUIRE(r.life_bar == "");
-//    REQUIRE(r.time_stamp == 0);
+    //    REQUIRE(r.life_bar == "");
+    //    REQUIRE(r.time_stamp == 0);
     CHECK(r.score_id == 1740197996);
 
-    if(lzma_enabled){
-        CHECKED_IF(r.frames){
+    if(lzma_enabled) {
+        CHECKED_IF(r.frames)
+        {
             const auto frames = *r.frames;
-            CHECKED_IF(frames.size() == 21188){
+            CHECKED_IF(frames.size() == 21188)
+            {
                 CHECK(frames[0].time.count() == 0);
                 CHECK(frames[0].x == 256);
                 CHECK(frames[0].y == -500);
                 CHECK(frames[0].state == 0);
-                CHECK(frames[1].time == std::chrono::milliseconds{ -1 });
+                CHECK(frames[1].time == std::chrono::milliseconds{-1});
                 CHECK(frames[1].x == 256);
                 CHECK(frames[1].y == -500);
                 CHECK(frames[1].state == 0);
-                CHECK(frames[3].time == std::chrono::milliseconds{ -11 });
+                CHECK(frames[3].time == std::chrono::milliseconds{-11});
                 CHECK(frames[3].x == 233.0667f);
                 CHECK(frames[3].y == 138.6667f);
                 CHECK(frames[3].state == 10);
                 CHECK(frames.back().x == 0);
                 CHECK(frames.back().y == 0);
                 CHECK(frames.back().state == 19467063);
-                CHECK((frames.end() - 2)->time == std::chrono::milliseconds{ 264331 });
+                CHECK((frames.end() - 2)->time == std::chrono::milliseconds{264331});
             }
         }
-    }
-    else{
+    } else {
         WARN("Skipping LZMA data parsing and tests");
         CHECK(r.frames->empty());
     }
-
 }
 
 TEST_CASE("replay without frames")
@@ -77,8 +76,7 @@ TEST_CASE("replay without frames")
 
     const auto rp_e = GENERATE(
             osu::Replay::from_file(filename, false),
-            osu::Replay::from_string(file_string(filename), false)
-    );
+            osu::Replay::from_string(file_string(filename), false));
 
     REQUIRE(!rp_e->frames);
 }

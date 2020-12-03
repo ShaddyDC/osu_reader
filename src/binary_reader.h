@@ -4,12 +4,13 @@
 #include <optional>
 
 template<typename Provider>
-class Binary_reader {};
+class Binary_reader {
+};
 
 template<>
-class Binary_reader<std::ifstream>{
+class Binary_reader<std::ifstream> {
 public:
-    Binary_reader(std::ifstream& input): input{ input }{}
+    Binary_reader(std::ifstream& input) : input{input} {}
 
     template<typename Type>
     [[nodiscard]] std::optional<Type> read_type();
@@ -37,9 +38,9 @@ std::optional<std::vector<char>> Binary_reader<std::ifstream>::read_bytes(const 
 }
 
 template<>
-class Binary_reader<std::string_view>{
+class Binary_reader<std::string_view> {
 public:
-    Binary_reader(std::string_view input): input{ input }{}
+    Binary_reader(std::string_view input) : input{input} {}
 
     template<typename Type>
     [[nodiscard]] std::optional<Type> read_type();
@@ -62,7 +63,7 @@ std::optional<Type> Binary_reader<std::string_view>::read_type()
 std::optional<std::vector<char>> Binary_reader<std::string_view>::read_bytes(const int num)
 {
     if(index + num > static_cast<int>(input.size())) return std::nullopt;
-    std::vector<char> buffer{ input.begin() + index, input.begin() + index + num };
+    std::vector<char> buffer{input.begin() + index, input.begin() + index + num};
     index += num;
     return buffer;
 }

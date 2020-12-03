@@ -5,16 +5,16 @@
 
 std::optional<osu::Beatmap> osu::Beatmap::from_file(const std::filesystem::path& file_path)
 {
-	std::ifstream file{ file_path };
-	if(!file.is_open()) return std::nullopt;
+    std::ifstream file{file_path};
+    if(!file.is_open()) return std::nullopt;
 
     const auto line_provider = [&file]() -> std::optional<std::string> {
         std::string line;
-	    if(!std::getline(file, line)) return std::nullopt;
+        if(!std::getline(file, line)) return std::nullopt;
         return line;
     };
 
-	return Beatmap_parser{}.parse_impl(line_provider);
+    return Beatmap_parser{}.parse_impl(line_provider);
 }
 
 std::optional<osu::Beatmap> osu::Beatmap::from_string(const std::string_view beatmap_content)
@@ -29,8 +29,8 @@ std::optional<osu::Beatmap> osu::Beatmap::from_string(const std::string_view bea
 
         last_pos = std::min(pos, beatmap_content.size() - 1) + 1;
 
-        return std::string{ beatmap_content.substr(tmp_pos, pos - tmp_pos) };
+        return std::string{beatmap_content.substr(tmp_pos, pos - tmp_pos)};
     };
 
-	return Beatmap_parser{}.parse_impl(line_provider);
+    return Beatmap_parser{}.parse_impl(line_provider);
 }

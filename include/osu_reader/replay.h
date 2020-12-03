@@ -1,20 +1,20 @@
 #pragma once
 
-#include <string>
+#include "gamemode.h"
 #include <chrono>
-#include <vector>
 #include <filesystem>
 #include <optional>
-#include "gamemode.h"
+#include <string>
+#include <vector>
 
-namespace osu{
+namespace osu {
     using Mods = int;
 
-    struct Replay{
+    struct Replay {
         [[nodiscard]] static std::optional<Replay> from_file(const std::filesystem::path& file_path, bool parse_frames = false);
         [[nodiscard]] static std::optional<Replay> from_string(const std::string_view content, bool parse_frames = false);
 
-        struct Replay_frame{
+        struct Replay_frame {
             std::chrono::milliseconds time;
             float x, y;
             int state;
@@ -41,4 +41,4 @@ namespace osu{
         std::optional<std::vector<Replay_frame>> frames;
         std::int64_t score_id;
     };
-}
+}// namespace osu

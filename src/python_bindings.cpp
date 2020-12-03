@@ -1,8 +1,8 @@
-#include <pybind11/pybind11.h>
 #include "osu_reader/beatmap.h"
 #include "osu_reader/replay.h"
-#include <pybind11/stl.h>
 #include <pybind11/chrono.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -12,7 +12,7 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("x", &osu::Point::x)
             .def_readwrite("y", &osu::Point::y)
             .def("__repr__",
-                 [](const osu::Point& p){
+                 [](const osu::Point& p) {
                      return "<pyshosu.Point(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")'>";
                  });
 
@@ -20,8 +20,8 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("time", &osu::Hitcircle::time)
             .def_readwrite("pos", &osu::Hitcircle::pos)
             .def("__repr__",
-                 [](const osu::Hitcircle& c){
-                     return "<pyshosu.Hitcircle(" + std::to_string(c.time.count())+ ", " + std::to_string(c.pos.x) + ", " + std::to_string(c.pos.y) + ")'>";
+                 [](const osu::Hitcircle& c) {
+                     return "<pyshosu.Hitcircle(" + std::to_string(c.time.count()) + ", " + std::to_string(c.pos.x) + ", " + std::to_string(c.pos.y) + ")'>";
                  });
 
     py::enum_<osu::Slider::Slider_type>(m, "Slider_type")
@@ -38,11 +38,9 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("repeat", &osu::Slider::repeat)
             .def_readwrite("length", &osu::Slider::length)
             .def("__repr__",
-                 [](const osu::Slider& s)
-                 {
-                     return "<pyshosu.Slider(" + std::string{ static_cast<char>(s.type) } + ", " +
-                            std::to_string(s.time.count()) + ", "
-                            + std::to_string(s.points.front().front().x) + ", " +
+                 [](const osu::Slider& s) {
+                     return "<pyshosu.Slider(" + std::string{static_cast<char>(s.type)} + ", " +
+                            std::to_string(s.time.count()) + ", " + std::to_string(s.points.front().front().x) + ", " +
                             std::to_string(s.points.front().front().y) + ")'>";
                  });
 
@@ -50,8 +48,8 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("start", &osu::Spinner::start)
             .def_readwrite("end", &osu::Spinner::end)
             .def("__repr__",
-                 [](const osu::Spinner& s){
-                     return "<pyshosu.Spinner(" + std::to_string(s.start.count())+ ", " + std::to_string(s.end.count()) + ")'>";
+                 [](const osu::Spinner& s) {
+                     return "<pyshosu.Spinner(" + std::to_string(s.start.count()) + ", " + std::to_string(s.end.count()) + ")'>";
                  });
 
     py::class_<osu::Beatmap>(m, "Beatmap")
@@ -99,9 +97,9 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("sliders", &osu::Beatmap::sliders)
             .def_readwrite("spinners", &osu::Beatmap::spinners)
             .def("__repr__",
-              [](const osu::Beatmap& b){
-                  return "<pyshosu.Beatmap '" + b.title + " (" + b.creator + ") [" + b.difficulty_name + "]'>";
-              });
+                 [](const osu::Beatmap& b) {
+                     return "<pyshosu.Beatmap '" + b.title + " (" + b.creator + ") [" + b.difficulty_name + "]'>";
+                 });
 
     py::class_<osu::Beatmap::Timingpoint>(m, "Timingpoint")
             .def_readwrite("time", &osu::Beatmap::Timingpoint::time)
@@ -113,7 +111,7 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("uninherited", &osu::Beatmap::Timingpoint::uninherited)
             .def_readwrite("kiai", &osu::Beatmap::Timingpoint::kiai)
             .def("__repr__",
-                 [](const osu::Beatmap::Timingpoint& t){
+                 [](const osu::Beatmap::Timingpoint& t) {
                      return "<pyshosu.Beatmap.Timingpoint '" + std::to_string(t.time.count()) + " - " + std::to_string(t.beat_duration.count()) + "'>";
                  });
 
@@ -129,8 +127,8 @@ static void replay_bindings(py::module& m)
             .def_readwrite("y", &osu::Replay::Replay_frame::y)
             .def_readwrite("state", &osu::Replay::Replay_frame::state)
             .def("__repr__",
-                 [](const osu::Replay::Replay_frame& f){
-                     return "<pyshosu.Replay.frame(" + std::to_string(f.time.count())+ ", " + std::to_string(f.x) + ", " + std::to_string(f.y) + ", " + std::to_string(f.state) + ")'>";
+                 [](const osu::Replay::Replay_frame& f) {
+                     return "<pyshosu.Replay.frame(" + std::to_string(f.time.count()) + ", " + std::to_string(f.x) + ", " + std::to_string(f.y) + ", " + std::to_string(f.state) + ")'>";
                  });
 
     py::class_<osu::Replay>(m, "Replay")
@@ -157,7 +155,7 @@ static void replay_bindings(py::module& m)
             .def_readwrite("frames", &osu::Replay::frames)
             .def_readwrite("score_id", &osu::Replay::score_id)
             .def("__repr__",
-                 [](const osu::Replay& r){
+                 [](const osu::Replay& r) {
                      return "<pyshosu.Replay '" + r.map_hash + " - " + r.player_name + "'>";
                  });
 
@@ -174,10 +172,10 @@ PYBIND11_MODULE(pyshosu, m)
     py::class_<std::filesystem::path>(m, "Path")
             .def(py::init<std::string>())
             .def("__repr__",
-            [](const std::filesystem::path& p)
-            {
-                return "<std.filesystem.Path '" + p.string() + "'>";
-            });;
+                 [](const std::filesystem::path& p) {
+                     return "<std.filesystem.Path '" + p.string() + "'>";
+                 });
+    ;
     py::implicitly_convertible<std::string, std::filesystem::path>();
 
     py::enum_<osu::Gamemode>(m, "Gamemode")

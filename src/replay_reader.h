@@ -1,10 +1,10 @@
 #pragma once
 
-#include <osu_reader/replay.h>
-#include <optional>
-#include <lzma.h>
-#include "string_stuff.h"
 #include "parse_string.h"
+#include "string_stuff.h"
+#include <lzma.h>
+#include <optional>
+#include <osu_reader/replay.h>
 
 #ifdef ENABLE_LZMA
 constexpr const bool lzma_enabled = true;
@@ -15,7 +15,7 @@ constexpr const bool lzma_enabled = false;
 template<typename Provider>
 class Replay_reader {
 public:
-    Replay_reader(Provider& provider): provider{ provider }{}
+    Replay_reader(Provider& provider) : provider{provider} {}
 
     std::optional<osu::Replay> parse_replay();
     static std::optional<std::vector<osu::Replay::Replay_frame>> decode_frames(std::vector<char>& compressed);
@@ -39,25 +39,7 @@ std::optional<osu::Replay> Replay_reader<Provider>::parse_replay()
     osu::Replay replay;
 
     const auto success =
-            read_type(replay.mode)
-            && read_type(replay.game_version)
-            && read_type(replay.map_hash)
-            && read_type(replay.player_name)
-            && read_type(replay.replay_hash)
-            && read_type(replay.count_300)
-            && read_type(replay.count_100)
-            && read_type(replay.count_50)
-            && read_type(replay.count_geki)
-            && read_type(replay.count_katsu)
-            && read_type(replay.count_miss)
-            && read_type(replay.score)
-            && read_type(replay.max_combo)
-            && read_type(replay.full_combo)
-            && read_type(replay.mods)
-            && read_type(replay.life_bar)
-            && read_type(replay.time_stamp)
-            && read_replaydata(replay.replay_compressed)
-            && read_type(replay.score_id);
+            read_type(replay.mode) && read_type(replay.game_version) && read_type(replay.map_hash) && read_type(replay.player_name) && read_type(replay.replay_hash) && read_type(replay.count_300) && read_type(replay.count_100) && read_type(replay.count_50) && read_type(replay.count_geki) && read_type(replay.count_katsu) && read_type(replay.count_miss) && read_type(replay.score) && read_type(replay.max_combo) && read_type(replay.full_combo) && read_type(replay.mods) && read_type(replay.life_bar) && read_type(replay.time_stamp) && read_replaydata(replay.replay_compressed) && read_type(replay.score_id);
 
     if(!success) return std::nullopt;
     return replay;
@@ -90,7 +72,7 @@ bool Replay_reader<Provider>::read_type(std::string& value)
     value.resize(length);
     const auto bytes = provider.read_bytes(length);
     if(!bytes) return false;
-    value = std::string{ bytes->begin(), bytes->end() };
+    value = std::string{bytes->begin(), bytes->end()};
     return true;
 }
 
@@ -103,7 +85,7 @@ std::optional<int> Replay_reader<Provider>::read_uleb128()
 
     std::uint8_t sum = tmp & 0x7f;
 
-    for(int i = 1; tmp &  0x80; ++i){
+    for(int i = 1; tmp & 0x80; ++i) {
         if(!read_type(tmp)) return std::nullopt;
         sum |= (tmp & 0x7f) << 7 * i;
     }
@@ -113,7 +95,7 @@ std::optional<int> Replay_reader<Provider>::read_uleb128()
 template<typename Provider>
 bool Replay_reader<Provider>::read_replaydata(std::vector<char>& value)
 {
-    const auto compressed_size_opt =  provider.template read_type<int>();
+    const auto compressed_size_opt = provider.template read_type<int>();
     if(!compressed_size_opt) return false;
 
     const auto compressed_size = *compressed_size_opt;
@@ -137,7 +119,7 @@ bool Replay_reader<Provider>::read_type(std::chrono::system_clock::time_point& v
 {
     const auto value_opt = provider.template read_type<std::uint64_t>();
     if(!value_opt) return false;
-    value = std::chrono::time_point<std::chrono::system_clock>{ std::chrono::nanoseconds{ *value_opt * 100 } };
+    value = std::chrono::time_point<std::chrono::system_clock>{std::chrono::nanoseconds{*value_opt * 100}};
     return true;
 }
 
@@ -154,7 +136,7 @@ std::optional<std::string> Replay_reader<Provider>::lzma_decode(std::vector<char
     strm.next_in = reinterpret_cast<const std::uint8_t*>(compressed.data());
     strm.avail_in = compressed.size();
 
-    if(lzma_auto_decoder(&strm, UINT64_MAX, LZMA_CHECK_CRC64) != LZMA_OK){
+    if(lzma_auto_decoder(&strm, UINT64_MAX, LZMA_CHECK_CRC64) != LZMA_OK) {
         return std::nullopt;
     }
 
@@ -177,7 +159,7 @@ template<typename Provider>
 std::optional<std::vector<osu::Replay::Replay_frame>>
 Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
 {
-    if(!lzma_enabled) throw std::runtime_error{ "Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF" };
+    if(!lzma_enabled) throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
 
     const auto str_opt = lzma_decode(compressed);
     if(!str_opt) return std::nullopt;
@@ -188,17 +170,17 @@ Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
     frames.reserve(lines.size());
 
     auto current_time = 0;
-    for(const auto line : lines){
+    for(const auto line : lines) {
         const auto tokens = split(line, '|');
         if(tokens.size() == 0) continue;
         if(tokens.size() != 4) return std::nullopt;
         current_time += parse_value<int>(tokens[0]);
         frames.push_back({
-                                 std::chrono::milliseconds{ current_time },
-                                 parse_value<float>(tokens[1]),
-                                 parse_value<float>(tokens[2]),
-                                 parse_value<int>(tokens[3]),
-                         });
+                std::chrono::milliseconds{current_time},
+                parse_value<float>(tokens[1]),
+                parse_value<float>(tokens[2]),
+                parse_value<int>(tokens[3]),
+        });
     }
     return frames;
 }

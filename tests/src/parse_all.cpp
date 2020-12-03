@@ -20,7 +20,7 @@
 //
 //	UNSCOPED_INFO("Parsing files...");
 //	std::mutex mx;
-//	std::for_each(std::execution::par_unseq, beatmap_files.cbegin(), beatmap_files.cend(),  
+//	std::for_each(std::execution::par_unseq, beatmap_files.cbegin(), beatmap_files.cend(),
 //		[&mx](const auto& file)
 //	{
 //		try {
@@ -37,5 +37,5 @@
 //			std::lock_guard<std::mutex> l(mx);
 //			WARN(e.what());
 //		}
-//	});	
+//	});
 //}

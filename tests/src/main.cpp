@@ -1,7 +1,7 @@
-#define CATCH_CONFIG_MAIN 
+#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
 TEST_CASE("Sanity")
 {
-	REQUIRE(1 == 1);
+    REQUIRE(1 == 1);
 }

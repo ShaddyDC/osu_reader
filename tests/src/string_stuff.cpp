@@ -4,7 +4,7 @@
 TEST_CASE("starts_with", "[string]")
 {
     REQUIRE(starts_with("hello world", "hello"));
-    REQUIRE(starts_with(std::string{ "hello world" }, "hello"));
+    REQUIRE(starts_with(std::string{"hello world"}, "hello"));
     REQUIRE_FALSE(starts_with("hello world", "world"));
 }
 
@@ -87,5 +87,4 @@ TEST_CASE("split string", "[string]")
     REQUIRE(splits[7] == "lazy");
     REQUIRE(splits[8] == "dog");
     REQUIRE(splits[9] == ",");
-
 }
