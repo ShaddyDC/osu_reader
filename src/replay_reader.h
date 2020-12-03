@@ -15,7 +15,7 @@ constexpr const bool lzma_enabled = false;
 template<typename Provider>
 class Replay_reader {
 public:
-    Replay_reader(Provider& provider) : provider{provider} {}
+    explicit Replay_reader(Provider& provider) : provider{provider} {}
 
     std::optional<osu::Replay> parse_replay();
     static std::optional<std::vector<osu::Replay::Replay_frame>> decode_frames(std::vector<char>& compressed);

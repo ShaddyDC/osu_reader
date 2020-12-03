@@ -10,7 +10,7 @@ class Binary_reader {
 template<>
 class Binary_reader<std::ifstream> {
 public:
-    Binary_reader(std::ifstream& input) : input{input} {}
+    explicit Binary_reader(std::ifstream& input) : input{input} {}
 
     template<typename Type>
     [[nodiscard]] std::optional<Type> read_type();
@@ -40,7 +40,7 @@ std::optional<std::vector<char>> Binary_reader<std::ifstream>::read_bytes(const 
 template<>
 class Binary_reader<std::string_view> {
 public:
-    Binary_reader(std::string_view input) : input{input} {}
+    explicit Binary_reader(std::string_view input) : input{input} {}
 
     template<typename Type>
     [[nodiscard]] std::optional<Type> read_type();
