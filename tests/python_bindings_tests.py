@@ -16,6 +16,9 @@ class BeatmapTest(unittest.TestCase):
             self.assertEqual(bm.sample_set, "Soft")
             self.assertAlmostEqual(bm.stack_leniency, 0.7)
 
+            self.assertEqual(bm.title, "Nanatsu Koyoto")
+
+
 
 class ReplayTest(unittest.TestCase):
     def test_test(self):
