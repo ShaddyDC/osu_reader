@@ -19,9 +19,8 @@ void if_found_parse(const std::array<Beatmap_match_pair, N>& map,
                     osu::Beatmap& bm)
 {
     if(const auto match = std::find_if(map.cbegin(), map.cend(),
-                                       [&line_element_string,
-                                        line_element = ltrim_view(line_element_string)](const auto& e) {
-                                           return e.first == line_element_string;
+                                       [line_element = ltrim_view(line_element_string)](const auto& e) {
+                                           return e.first == line_element;
                                        });
        match != map.cend()) {
         std::visit([&value_string, &bm](const auto& e) {
