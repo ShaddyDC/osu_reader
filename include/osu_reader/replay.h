@@ -15,7 +15,7 @@ namespace osu{
         [[nodiscard]] static std::optional<Replay> from_string(const std::string_view content, bool parse_frames = false);
 
         struct Replay_frame{
-            int time;
+            std::chrono::milliseconds time;
             float x, y;
             int state;
         };

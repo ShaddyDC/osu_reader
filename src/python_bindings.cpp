@@ -129,7 +129,7 @@ static void replay_bindings(py::module& m)
             .def_readwrite("state", &osu::Replay::Replay_frame::state)
             .def("__repr__",
                  [](const osu::Replay::Replay_frame& f){
-                     return "<pyshosu.Replay.frame(" + std::to_string(f.time)+ ", " + std::to_string(f.x) + ", " + std::to_string(f.y) + ", " + std::to_string(f.state) + ")'>";
+                     return "<pyshosu.Replay.frame(" + std::to_string(f.time.count())+ ", " + std::to_string(f.x) + ", " + std::to_string(f.y) + ", " + std::to_string(f.state) + ")'>";
                  });
 
     py::class_<osu::Replay>(m, "Replay")

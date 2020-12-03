@@ -194,7 +194,7 @@ Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
         if(tokens.size() != 4) return std::nullopt;
         current_time += parse_value<int>(tokens[0]);
         frames.push_back({
-                                 current_time,
+                                 std::chrono::milliseconds{ current_time },
                                  parse_value<float>(tokens[1]),
                                  parse_value<float>(tokens[2]),
                                  parse_value<int>(tokens[3]),
