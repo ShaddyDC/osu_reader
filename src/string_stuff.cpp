@@ -1,5 +1,4 @@
 #include "string_stuff.h"
-#include <locale>
 
 std::vector<std::string_view> split(const std::string_view s, const char delim)
 {

@@ -1,10 +1,7 @@
 #include "beatmap_parser.h"
 #include "parse_string.h"
-#include "string_stuff.h"
 #include "timingpoints_helper.h"
 #include "util.h"
-#include <array>
-#include <charconv>
 #include <variant>
 
 using Beatmap_types = std::variant<int osu::Beatmap::*, float osu::Beatmap::*, bool osu::Beatmap::*,

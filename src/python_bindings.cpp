@@ -1,7 +1,6 @@
 #include "osu_reader/beatmap.h"
 #include "osu_reader/replay.h"
 #include <pybind11/chrono.h>
-#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 namespace py = pybind11;

@@ -1,7 +1,6 @@
 #include "osu_reader/replay.h"
 #include "binary_reader.h"
 #include "replay_reader.h"
-#include <fstream>
 
 std::optional<osu::Replay> osu::Replay::from_file(const std::filesystem::path& file_path, bool parse_frames)
 {
