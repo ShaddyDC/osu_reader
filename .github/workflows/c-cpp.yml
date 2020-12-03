@@ -27,7 +27,6 @@ jobs:
     
 
     - name: Test python bindings
-      working-directory: $GITHUB_WORKSPACE
       shell: bash
-      run: pwd && ls -la && python3 --version && python3 setup.py test
+      run: cd $GITHUB_WORKSPACE && pwd && ls -la && python3 --version && python3 setup.py test
       
