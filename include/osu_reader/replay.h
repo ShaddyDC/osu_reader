@@ -36,7 +36,7 @@ namespace osu {
         bool full_combo;
         Mods mods;
         std::string life_bar;
-        std::chrono::system_clock::time_point time_stamp;
+        std::chrono::time_point<std::chrono::nanoseconds> time_stamp;
         std::vector<char> replay_compressed;
         std::optional<std::vector<Replay_frame>> frames;
         std::int64_t score_id;

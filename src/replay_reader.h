@@ -25,7 +25,7 @@ private:
     bool read_type(Type& value);
     bool read_type(std::string& value);
     bool read_type(osu::Gamemode& value);
-    bool read_type(std::chrono::system_clock::time_point& value);
+    bool read_type(std::chrono::time_point<std::chrono::nanoseconds>& value);
     std::optional<int> read_uleb128();
     bool read_replaydata(std::vector<char>& value);
     static std::optional<std::string> lzma_decode(std::vector<char>& compressed);
@@ -115,11 +115,14 @@ bool Replay_reader<Provider>::read_type(osu::Gamemode& value)
 }
 
 template<typename Provider>
-bool Replay_reader<Provider>::read_type(std::chrono::system_clock::time_point& value)
+bool Replay_reader<Provider>::read_type(std::chrono::time_point<std::chrono::nanoseconds>& value)
 {
+    using Ticks = std::chrono::duration<std::int64_t,
+                                        std::ratio_multiply<std::ratio<100>, std::nano>>;
+
     const auto value_opt = provider.template read_type<std::uint64_t>();
     if(!value_opt) return false;
-    value = std::chrono::time_point<std::chrono::system_clock>{std::chrono::nanoseconds{*value_opt * 100}};
+    value = std::chrono::time_point<std::chrono::nanoseconds>{Ticks{*value_opt}};
     return true;
 }
 
@@ -159,7 +162,7 @@ template<typename Provider>
 std::optional<std::vector<osu::Replay::Replay_frame>>
 Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
 {
-    if constexpr (!lzma_enabled) throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
+    if constexpr(!lzma_enabled) throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
 
     const auto str_opt = lzma_decode(compressed);
     if(!str_opt) return std::nullopt;
