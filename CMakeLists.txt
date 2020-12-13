@@ -55,6 +55,9 @@ function(target_configuration target)
 
     if (ENABLE_LZMA)
         target_link_libraries(${target} PRIVATE liblzma)
+
+        # We need to add the include directory manually because otherwise emscripten somehow doesn't pick it up
+        target_include_directories(${target} PRIVATE libs/xz/src/liblzma/api)
     endif (ENABLE_LZMA)
 endfunction()
 
