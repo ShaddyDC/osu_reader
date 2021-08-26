@@ -267,6 +267,7 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
         for(auto it = points.cbegin() + 1; it != points.cend(); ++it) {
             if(it->x == last_point.x && it->y == last_point.y) slider.points.emplace_back();
             slider.points.back().push_back(*it);
+            last_point = *it;
         }
     }
 
