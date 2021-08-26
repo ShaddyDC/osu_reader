@@ -2,14 +2,11 @@
 
 #include "parse_string.h"
 #include "string_stuff.h"
-#include <lzma.h>
 #include <optional>
 #include <osu_reader/replay.h>
 
 #ifdef ENABLE_LZMA
-constexpr const bool lzma_enabled = true;
-#else
-constexpr const bool lzma_enabled = false;
+#include <lzma.h>
 #endif
 
 template<typename Provider>
@@ -129,6 +126,7 @@ bool Replay_reader<Provider>::read_type(std::chrono::time_point<std::chrono::nan
 template<typename Provider>
 std::optional<std::string> Replay_reader<Provider>::lzma_decode(std::vector<char>& compressed)
 {
+#ifdef ENABLE_LZMA
     if(compressed.empty()) return std::nullopt;
 
     constexpr const auto buff_size = 4096;
@@ -148,22 +146,24 @@ std::optional<std::string> Replay_reader<Provider>::lzma_decode(std::vector<char
         strm.next_out = reinterpret_cast<uint8_t*>(buffer);
         strm.avail_out = buff_size;
         res = lzma_code(&strm, LZMA_FINISH);
-        if(strm.avail_out != buff_size) {
+        if (strm.avail_out != buff_size) {
             std::copy(std::begin(buffer), std::end(buffer) - strm.avail_out, std::back_inserter(output));
         }
-    } while(res == LZMA_OK || res == LZMA_GET_CHECK);
+    } while (res == LZMA_OK || res == LZMA_GET_CHECK);
 
-    if(res != LZMA_STREAM_END) return std::nullopt;
+    if (res != LZMA_STREAM_END) return std::nullopt;
 
     return output;
+#else
+    throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
+#endif
 }
 
 template<typename Provider>
 std::optional<std::vector<osu::Replay::Replay_frame>>
 Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
 {
-    if constexpr(!lzma_enabled) throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
-
+#ifdef ENABLE_LZMA
     const auto str_opt = lzma_decode(compressed);
     if(!str_opt) return std::nullopt;
 
@@ -176,14 +176,17 @@ Replay_reader<Provider>::decode_frames(std::vector<char>& compressed)
     for(const auto line : lines) {
         const auto tokens = split(line, '|');
         if(tokens.empty()) continue;
-        if(tokens.size() != 4) return std::nullopt;
+        if (tokens.size() != 4) return std::nullopt;
         current_time += parse_value<int>(tokens[0]);
         frames.push_back({
-                std::chrono::milliseconds{current_time},
-                parse_value<float>(tokens[1]),
-                parse_value<float>(tokens[2]),
-                parse_value<int>(tokens[3]),
-        });
+                                 std::chrono::milliseconds{current_time},
+                                 parse_value<float>(tokens[1]),
+                                 parse_value<float>(tokens[2]),
+                                 parse_value<int>(tokens[3]),
+                         });
     }
     return frames;
+#else
+    throw std::runtime_error{"Trying to decode replay frames, but compiled with option ENABLE_LZMA=OFF"};
+#endif
 }
