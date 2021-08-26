@@ -29,12 +29,11 @@ namespace osu {
             catmull = 'C'
         };
 
-        using Slider_segment = std::vector<Point>;
 
         std::chrono::milliseconds time;
         std::chrono::milliseconds duration;
         Slider_type type;
-        std::vector<Slider_segment> points;
+        std::vector<Point> control_points;
         int repeat;
         float length;
     };

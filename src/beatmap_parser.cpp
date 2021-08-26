@@ -212,8 +212,7 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
 
     Slider slider{};
 
-    std::vector<Point> points;
-    points.push_back({parse_value<float>(tokens[x]), parse_value<float>(tokens[y])});
+    slider.control_points.push_back({parse_value<float>(tokens[x]), parse_value<float>(tokens[y])});
 
     parse_value(tokens[time], slider.time);
     parse_value(tokens[repeat], slider.repeat);
@@ -243,7 +242,7 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
     if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return;
     slider.type = static_cast<Slider::Slider_type>(sub_tokens[0][0]);
 
-    std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(points), [](auto t) {
+    std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.control_points), [](auto t) {
 #if false
                 Point point{};
                 const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
@@ -257,19 +256,6 @@ void osu::Beatmap_parser::parse_slider(const std::vector<std::string_view>& toke
                 return point;
 #endif
     });
-
-    // Turn points to slider segments
-    if(!points.empty()) {
-        slider.points.emplace_back();
-        slider.points.back().push_back(points.front());
-
-        auto last_point = points.front();
-        for(auto it = points.cbegin() + 1; it != points.cend(); ++it) {
-            if(it->x == last_point.x && it->y == last_point.y) slider.points.emplace_back();
-            slider.points.back().push_back(*it);
-            last_point = *it;
-        }
-    }
 
     beatmap_.sliders.push_back(slider);
 }

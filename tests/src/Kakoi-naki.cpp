@@ -85,17 +85,14 @@ TEST_CASE("Kakoi-naki")
         CHECK(s.repeat == 2);
         CHECK(s.length == 96.599997052002f);
         CHECK(s.duration == 441ms);
-        CHECKED_IF(s.points.size() == 1)
+        CHECKED_IF(s.control_points.size() == 3)
         {
-            CHECKED_IF(s.points[0].size() == 3)
-            {
-                CHECK(s.points[0][0].x == 260.f);
-                CHECK(s.points[0][0].y == 236.f);
-                CHECK(s.points[0][1].x == 252.f);
-                CHECK(s.points[0][1].y == 272.f);
-                CHECK(s.points[0][2].x == 264.f);
-                CHECK(s.points[0][2].y == 344.f);
-            }
+            CHECK(s.control_points[0].x == 260.f);
+            CHECK(s.control_points[0].y == 236.f);
+            CHECK(s.control_points[1].x == 252.f);
+            CHECK(s.control_points[1].y == 272.f);
+            CHECK(s.control_points[2].x == 264.f);
+            CHECK(s.control_points[2].y == 344.f);
         }
     }
 

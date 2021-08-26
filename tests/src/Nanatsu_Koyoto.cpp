@@ -117,17 +117,14 @@ TEST_CASE("Nanatsu Koyoto")
         CHECK(s.type == osu::Slider::Slider_type::perfect);
         CHECK(s.repeat == 1);
         CHECK(s.length == 90.f);
-        CHECKED_IF(s.points.size() == 1)
+        CHECKED_IF(s.control_points.size() == 3)
         {
-            CHECKED_IF(s.points[0].size() == 3)
-            {
-                CHECK(s.points[0][0].x == 290.f);
-                CHECK(s.points[0][0].y == 197.f);
-                CHECK(s.points[0][1].x == 242.f);
-                CHECK(s.points[0][1].y == 197.f);
-                CHECK(s.points[0][2].x == 170.f);
-                CHECK(s.points[0][2].y == 205.f);
-            }
+            CHECK(s.control_points[0].x == 290.f);
+            CHECK(s.control_points[0].y == 197.f);
+            CHECK(s.control_points[1].x == 242.f);
+            CHECK(s.control_points[1].y == 197.f);
+            CHECK(s.control_points[2].x == 170.f);
+            CHECK(s.control_points[2].y == 205.f);
         }
     }
 }
