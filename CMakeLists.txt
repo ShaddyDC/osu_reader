@@ -27,7 +27,8 @@ set(Shosu_SOURCES
         src/beatmap.cpp
         src/beatmap_parser.cpp
         src/string_stuff.cpp
-        src/replay.cpp)
+        src/replay.cpp
+        src/parse_hitobject.cpp)
 
 add_library(osuReader ${Shosu_SOURCES})
 
