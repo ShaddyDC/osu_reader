@@ -39,8 +39,6 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
 
     osu::Slider slider{};
 
-    slider.control_points.push_back({parse_value<float>(tokens[x]), parse_value<float>(tokens[y])});
-
     parse_value(tokens[time], slider.time);
     parse_value(tokens[repeat], slider.repeat);
     parse_value(tokens[length], slider.length);
@@ -60,22 +58,48 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
         });
     };
     if(sub_tokens[0].empty() || !valid_slider_type(sub_tokens[0][0])) return std::nullopt;
-    slider.type = static_cast<osu::Slider::Slider_type>(sub_tokens[0][0]);
 
-    std::transform(sub_tokens.cbegin() + 1, sub_tokens.cend(), std::back_inserter(slider.control_points), [](auto t) {
+    // Transform points to curve segments
+    slider.segments.emplace_back();
+    slider.segments.back().type = slider.type = static_cast<osu::Slider::Slider_type>(sub_tokens[0].front());
+
+    slider.segments.back().points.push_back({parse_value<float>(tokens[x]), parse_value<float>(tokens[y])});
+
+    for(auto it = sub_tokens.cbegin() + 1; it != sub_tokens.cend(); ++it) {
+        if(it->length() == 1) {// new slider type begin. Is this actually a thing though??
+            slider.segments.emplace_back();
+            slider.segments.back().type = static_cast<osu::Slider::Slider_type>(it->front());
+            continue;
+        }
+
 #if false
         Point point{};
-        const auto pos = std::from_chars(t.data(), t.data() + t.length(), point.x).ptr;
-        std::from_chars(pos + 1, t.data() + t.length(), point.y);
-        return point;
+        const auto pos = std::from_chars(it->data(), it->data() + it->length(), point.x).ptr;
+        std::from_chars(pos + 1, it->data() + it->length(), point.y);
 #else// TODO: remove when from_chars is more widely supported
-                osu::Point point{};
-                std::size_t pos = 0;
-                point.x = std::stof(&t.front(), &pos);
-                point.y = std::stof(&t.front() + pos + 1, nullptr);
-                return point;
+        osu::Point point{};
+        std::size_t pos = 0;
+        point.x = std::stof(&it->front(), &pos);
+        point.y = std::stof(&it->front() + pos + 1, nullptr);
 #endif
-    });
+
+        // Duplicate points means start of new segment
+        if(!slider.segments.back().points.empty()) {
+            if(const auto last_point = slider.segments.back().points.back();
+               last_point.x == point.x && last_point.y == point.y) {
+
+                // As in lazer, we only include the point in the new segment
+                slider.segments.back().points.pop_back();
+                const auto last_type = slider.segments.back().type;
+                slider.segments.emplace_back();
+                slider.segments.back().type = last_type;
+                slider.segments.back().points.push_back(point);
+                continue;
+            }
+        }
+
+        slider.segments.back().points.push_back(point);
+    }
 
     return slider;
 }

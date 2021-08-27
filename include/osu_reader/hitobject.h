@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <optional>
 #include <vector>
 
 namespace osu {
@@ -29,11 +30,15 @@ namespace osu {
             catmull = 'C'
         };
 
+        struct Segment {
+            std::vector<Point> points;
+            Slider_type type;
+        };
 
         std::chrono::milliseconds time;
         std::chrono::milliseconds duration;
         Slider_type type;
-        std::vector<Point> control_points;
+        std::vector<Segment> segments;
         int repeat;
         float length;
     };
