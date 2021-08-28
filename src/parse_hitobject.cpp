@@ -1,5 +1,6 @@
 #include "parse_hitobject.h"
 #include "parse_string.h"
+#include <array>
 
 std::optional<osu::Hitcircle> parse_circle(const std::vector<std::string_view>& tokens)
 {
@@ -49,8 +50,8 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
     std::transform(sub_tokens.begin(), sub_tokens.end(),
                    sub_tokens.begin(), ltrim_view);
 
-    const auto valid_slider_type = [](const char slider_type) {
-        const constexpr std::array<osu::Slider::Slider_type, 4> slider_types{
+    const constexpr auto valid_slider_type = [](const char slider_type) {
+        const static constexpr std::array<osu::Slider::Slider_type, 4> slider_types{
                 osu::Slider::Slider_type::linear, osu::Slider::Slider_type::perfect,
                 osu::Slider::Slider_type::bezier, osu::Slider::Slider_type::catmull};
         return std::any_of(slider_types.cbegin(), slider_types.cend(), [&](auto e) {
@@ -73,7 +74,7 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
         }
 
 #if false
-        Point point{};
+        osu::Point point{};
         const auto pos = std::from_chars(it->data(), it->data() + it->length(), point.x).ptr;
         std::from_chars(pos + 1, it->data() + it->length(), point.y);
 #else// TODO: remove when from_chars is more widely supported

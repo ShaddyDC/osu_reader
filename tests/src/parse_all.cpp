@@ -1,41 +1,32 @@
 //#include <catch2/catch.hpp>
-//#include <execution>
+////#include <execution>
 //#include <filesystem>
+//#include <iostream>
 //#include <mutex>
 //#include <osu_reader/beatmap.h>
-//#include <iostream>
 //
 //TEST_CASE("parse all beatmaps")
 //{
-//	std::vector<std::filesystem::path> beatmap_files;
-//	const auto files = std::filesystem::recursive_directory_iterator{ "D:/games/osu!/Songs" };
+//    const auto files = std::filesystem::recursive_directory_iterator{"/run/media/space/ext4/games/osu/drive_c/osu/Songs/"};
 //
-//	UNSCOPED_INFO("Gathering all .osu paths...");
-//	std::for_each(begin(files),end(files),
-//		[&beatmap_files](const auto& file)
-//	{
-//		if (file.path().extension() != ".osu") return;
-//		beatmap_files.push_back(file);
-//	});
+//    std::cout << "Gathering all .osu paths...\n";
+//    auto i = 0;
+//    std::for_each(begin(files), end(files),
+//                  [&i](const auto& file) {
+//                      if(file.path().extension() != ".osu") return;
+//                      ++i;
 //
-//	UNSCOPED_INFO("Parsing files...");
-//	std::mutex mx;
-//	std::for_each(std::execution::par_unseq, beatmap_files.cbegin(), beatmap_files.cend(),
-//		[&mx](const auto& file)
-//	{
-//		try {
-//			const auto beatmap = osu::Beatmap_parser::parse(file);
-//			if (beatmap) {
-//			}
-//			else if (file_size(file) >= 5) {
-//				std::lock_guard<std::mutex> l(mx);
-//				WARN("Failed to parse " << file);
-//				std::cout << file << '\n';
-//			}
-//		}
-//		catch (const std::exception& e) {
-//			std::lock_guard<std::mutex> l(mx);
-//			WARN(e.what());
-//		}
-//	});
+//                      std::cout << '\r' << i << ": parsing" << file << "...";
+//
+//                      try {
+//                          const auto beatmap = osu::Beatmap::from_file(file);
+//                          if(beatmap) {
+//                          } else if(file_size(file) >= 5) {
+//                              //				std::lock_guard<std::mutex> l(mx);
+//                              std::cout << "\n\033[1;31m" << "Failed to parse " << file << "\033[0m\n";
+//                          }
+//                      } catch(const std::exception& e) {
+//                          std::cout << "\n\033[1;31m" << "Error on " << file << ": " << e.what() << "\033[0m\n";
+//                      }
+//                  });
 //}
