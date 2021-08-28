@@ -8,14 +8,14 @@ endif (NOT Catch2_FOUND)
 
 
 add_executable(osuReaderTests src/main.cpp
-        src/Kakoi-naki.cpp
-        src/Nanatsu_Koyoto.cpp
+        src/beatmap_Kakoi-naki.cpp
+        src/beatmap_Nanatsu_Koyoto.cpp
         src/parse_all.cpp
         src/file_formats.cpp
         src/beatmap_util.cpp
         src/timingpoints.cpp
         src/string_stuff.cpp
-        src/cptnXn_fdfd.cpp)
+        src/replay_cptnXn_fdfd.cpp)
 
 target_link_libraries(osuReaderTests
         osuReader::osuReader
