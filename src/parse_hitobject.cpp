@@ -102,6 +102,17 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
         slider.segments.back().points.push_back(point);
     }
 
+    // Slider segment edge rules for perfect curves
+    for(auto& segment : slider.segments) {
+        if(segment.type != osu::Slider::Slider_type::perfect) continue;
+        const auto& p = segment.points;
+        if(p.size() != 3) segment.type = osu::Slider::Slider_type::bezier;
+        else if(std::abs((p[1].y - p[0].y) * (p[2].x - p[0].x) - (p[1].x - p[0].x) * (p[2].y - p[0].y)) <= 1e-3f) {
+            // Co-linear perfect curves to a linear path
+            segment.type = osu::Slider::Slider_type::linear;
+        }
+    }
+
     return slider;
 }
 std::optional<osu::Spinner> parse_spinner(const std::vector<std::string_view>& tokens)
