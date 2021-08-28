@@ -73,6 +73,7 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
             continue;
         }
 
+        // TODO: Max coordinate values of 131072
 #if false
         osu::Point point{};
         const auto pos = std::from_chars(it->data(), it->data() + it->length(), point.x).ptr;
