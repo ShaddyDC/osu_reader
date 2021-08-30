@@ -90,11 +90,8 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
             if(const auto last_point = slider.segments.back().points.back();
                last_point.x == point.x && last_point.y == point.y) {
 
-                // As in lazer, we only include the point in the new segment
-                slider.segments.back().points.pop_back();
-                const auto last_type = slider.segments.back().type;
                 slider.segments.emplace_back();
-                slider.segments.back().type = last_type;
+                slider.segments.back().type = slider.type;
                 slider.segments.back().points.push_back(point);
                 continue;
             }
