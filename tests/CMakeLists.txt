@@ -46,3 +46,8 @@ include(Catch)
 catch_discover_tests(osuReaderTests)
 
 add_test(COMMAND osuReaderTests)
+
+# Visualisers
+if (ENABLE_TEST_CURVE_VIS)
+    add_subdirectory(curve_vis)
+endif ()

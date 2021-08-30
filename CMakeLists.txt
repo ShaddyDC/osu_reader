@@ -6,6 +6,7 @@ project(osuReader VERSION 0.1.1 LANGUAGES CXX)
 option(ENABLE_PYBIND "Compile python bindings" FALSE)
 option(ENABLE_LZMA "Enable parsing of replay frames through xz library" TRUE)
 option(ENABLE_TESTING "Enable Test Builds" ON)
+option(ENABLE_TEST_CURVE_VIS "Programs to visualise curves (requires ENABLE_TESTING)" OFF)
 
 
 # Replay LZMA parsing with library
