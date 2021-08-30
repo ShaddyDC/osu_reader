@@ -2,4 +2,4 @@
 
 #include <osu_reader/hitobject.h>
 
-std::vector<osu::Vector2> sliderpath(const osu::Slider& slider);
+[[nodiscard]] std::vector<osu::Vector2> sliderpath(const osu::Slider& slider);
