@@ -7,12 +7,12 @@ namespace py = pybind11;
 
 static void beatmap_bindings(py::module& m)
 {
-    py::class_<osu::Point>(m, "Point")
-            .def_readwrite("x", &osu::Point::x)
-            .def_readwrite("y", &osu::Point::y)
+    py::class_<osu::Vector2>(m, "Vector2")
+            .def_readwrite("x", &osu::Vector2::x)
+            .def_readwrite("y", &osu::Vector2::y)
             .def("__repr__",
-                 [](const osu::Point& p) {
-                     return "<pyshosu.Point(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")'>";
+                 [](const osu::Vector2& p) {
+                     return "<pyshosu.Vector2(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")'>";
                  });
 
     py::class_<osu::Hitcircle>(m, "Hitcircle")
@@ -29,18 +29,21 @@ static void beatmap_bindings(py::module& m)
             .value("bezier", osu::Slider::Slider_type::bezier)
             .value("catmull", osu::Slider::Slider_type::catmull);
 
+    py::class_<osu::Slider::Segment>(m, "Slider.Segment")
+            .def_readwrite("type", &osu::Slider::Segment::type)
+            .def_readwrite("points", &osu::Slider::Segment::points);
+
     py::class_<osu::Slider>(m, "Slider")
             .def_readwrite("time", &osu::Slider::time)
             .def_readwrite("duration", &osu::Slider::duration)
             .def_readwrite("type", &osu::Slider::type)
-            .def_readwrite("points", &osu::Slider::points)
+            .def_readwrite("segments", &osu::Slider::segments)
             .def_readwrite("repeat", &osu::Slider::repeat)
             .def_readwrite("length", &osu::Slider::length)
             .def("__repr__",
                  [](const osu::Slider& s) {
                      return "<pyshosu.Slider(" + std::string{static_cast<char>(s.type)} + ", " +
-                            std::to_string(s.time.count()) + ", " + std::to_string(s.points.front().front().x) + ", " +
-                            std::to_string(s.points.front().front().y) + ")'>";
+                            std::to_string(s.time.count()) + ", " + std::to_string(s.length) + ")'>";
                  });
 
     py::class_<osu::Spinner>(m, "Spinner")
