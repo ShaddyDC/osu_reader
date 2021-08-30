@@ -58,11 +58,13 @@ print(r.player_name)
 
 - `.osu` format (Mostly, missing colours and hit extras)
 - `.osr` format (Not thoroughly tested yet)
+- Slider curve computation (wip - not exposed yet)
 
 ### Planned
 
 - `osu!.db` (maybe)
 - Matching replay clicks to hitobjects etc
+- Stack notes
 
 If there's anything missing you need, open an issue and I'll push it on the priority list. 
 
