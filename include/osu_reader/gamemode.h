@@ -8,4 +8,4 @@ namespace osu {
         ctb = 2,
         mania = 3
     };
-}
+}// namespace osu

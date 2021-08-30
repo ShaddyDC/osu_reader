@@ -4,8 +4,7 @@ namespace osu {
     constexpr float ar_to_ms(const float ar)
     {
         if(ar >= 5) return 1950 - (ar * 150);
-        else
-            return 1800 - (ar * 120);
+        return 1800 - (ar * 120);
     }
 
     constexpr float cs_to_osupixel(const float cs)

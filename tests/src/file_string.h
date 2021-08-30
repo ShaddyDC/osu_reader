@@ -5,6 +5,6 @@
 inline std::string file_string(const char* filename)
 {
     std::ifstream f(filename);
-    return std::string((std::istreambuf_iterator<char>(f)),
-                       std::istreambuf_iterator<char>());
+    return {(std::istreambuf_iterator<char>(f)),
+            std::istreambuf_iterator<char>()};
 }

@@ -84,7 +84,7 @@ inline void parse_value<>(std::string_view value_string, std::vector<std::chrono
     std::transform(tokens.cbegin(), tokens.cend(), std::back_inserter(value),
                    [](const std::string_view s) {
                        const auto trimmed = ltrim_view(s);
-                       int v;
+                       int v = 0;
                        std::from_chars(trimmed.data(), trimmed.data() + trimmed.length(), v);
                        return std::chrono::milliseconds{v};
                    });

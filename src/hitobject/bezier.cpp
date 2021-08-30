@@ -1,6 +1,5 @@
 #include "bezier.h"
 #include "sliderpath.h"
-#include <cmath>
 #include <stack>
 
 static bool bezier_is_flat_enough(const std::vector<osu::Vector2>& points);

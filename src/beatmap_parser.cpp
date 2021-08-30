@@ -178,6 +178,7 @@ void osu::Beatmap_parser::parse_timingpoints(std::string_view line)
 
 void osu::Beatmap_parser::parse_hitobject(std::string_view line)
 {
+    // TODO: offset = FormatVersion < 5 ? 24 : 0;
     constexpr auto type_token = 3;
 
     auto tokens = split(line, ',');
@@ -185,9 +186,9 @@ void osu::Beatmap_parser::parse_hitobject(std::string_view line)
     std::transform(tokens.begin(), tokens.end(), tokens.begin(), ltrim_view);
 
     const auto type = parse_value<int>(tokens[type_token]);
-    if(type & static_cast<int>(Hitobject_type::circle)) {
+    if((type & static_cast<int>(Hitobject_type::circle)) != 0) {
         if(auto&& circle = parse_circle(tokens); circle) beatmap_.circles.push_back(*circle);
-    } else if(type & static_cast<int>(Hitobject_type::slider)) {
+    } else if((type & static_cast<int>(Hitobject_type::slider)) != 0) {
         if(auto&& slider = parse_slider(tokens); slider) {
             // Compute duration
             if(current_timingpoint_ != beatmap_.timingpoints.cend()) {
@@ -198,7 +199,7 @@ void osu::Beatmap_parser::parse_hitobject(std::string_view line)
 
             beatmap_.sliders.push_back(*slider);
         }
-    } else if(type & static_cast<int>(Hitobject_type::spinner)) {
+    } else if((type & static_cast<int>(Hitobject_type::spinner)) != 0) {
         if(auto&& spinner = parse_spinner(tokens); spinner) beatmap_.spinners.push_back(*spinner);
     }
 }
@@ -224,13 +225,9 @@ bool osu::Beatmap_parser::maybe_parse_utfheader(std::string_view line)
         return std::equal(e.cbegin(), e.cend(), header.cbegin());
     };
 
-    if(const auto matching_header = std::find_if(potential_ge_utf16_headers.cbegin(), potential_ge_utf16_headers.cend(),
-                                                 matches_header);
-       matching_header != potential_ge_utf16_headers.cend()) {
-        return true;
-    }
-
-    return false;
+    const auto matching_header = std::find_if(potential_ge_utf16_headers.cbegin(), potential_ge_utf16_headers.cend(),
+                                              matches_header);
+    return matching_header != potential_ge_utf16_headers.cend();
 }
 
 void osu::Beatmap_parser::parse_line(const std::string_view line)

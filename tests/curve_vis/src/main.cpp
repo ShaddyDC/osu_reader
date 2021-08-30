@@ -168,7 +168,7 @@ int main(int arc, char* argv[])
 {
     if(arc < 2 || std::strcmp(argv[1], "-h") == 0 || std::strcmp(argv[1], "--help") == 0) {
         std::cout << "Pass in the name of the test to use\n";
-        for(const auto [test, _] : tests_data) {
+        for([[maybe_unused]] const auto [test, test_data] : tests_data) {
             std::cout << "\t- " << test << '\n';
         }
         return 0;

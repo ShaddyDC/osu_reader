@@ -82,7 +82,7 @@ std::optional<int> Replay_reader<Provider>::read_uleb128()
 
     std::uint8_t sum = tmp & 0x7f;
 
-    for(int i = 1; tmp & 0x80; ++i) {
+    for(int i = 1; (tmp & 0x80) != 0; ++i) {
         if(!read_type(tmp)) return std::nullopt;
         sum |= (tmp & 0x7f) << 7 * i;
     }
@@ -141,7 +141,7 @@ std::optional<std::string> Replay_reader<Provider>::lzma_decode(std::vector<char
         return std::nullopt;
     }
 
-    lzma_ret res;
+    lzma_ret res{};
     do {
         strm.next_out = reinterpret_cast<uint8_t*>(buffer);
         strm.avail_out = buff_size;

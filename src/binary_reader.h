@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <optional>
+#include <vector>
 
 template<typename Provider>
 class Binary_reader {

@@ -1,9 +1,4 @@
 #include "catmull.h"
-#include "bezier.h"
-#include "perfect_circle.h"
-#include "sliderpath.h"
-#include <cmath>
-#include <stack>
 
 static osu::Vector2 catmull_find_point(const osu::Vector2& v1, const osu::Vector2& v2, const osu::Vector2& v3, const osu::Vector2& v4, double t)
 {

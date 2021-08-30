@@ -15,7 +15,7 @@ inline bool starts_with(std::string_view s, std::string_view prefix)
 inline std::string& ltrim(std::string& s)
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](const int ch) {
-                return !std::isspace(static_cast<unsigned char>(ch));
+                return std::isspace(static_cast<unsigned char>(ch)) == 0;
             }));
     return s;
 }
@@ -24,7 +24,7 @@ inline std::string& ltrim(std::string& s)
 inline std::string& rtrim(std::string& s)
 {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](const int ch) {
-                return !std::isspace(static_cast<unsigned char>(ch));
+                return std::isspace(static_cast<unsigned char>(ch)) == 0;
             }).base(),
             s.end());
     return s;
@@ -61,8 +61,8 @@ inline std::string trim_copy(std::string s)
 
 inline std::string_view ltrim_view(const std::string_view s)
 {
-    const auto it = std::find_if(s.begin(), s.end(), [](const int ch) {
-        return !std::isspace(static_cast<unsigned char>(ch));
+    const auto* const it = std::find_if(s.begin(), s.end(), [](const int ch) {
+        return std::isspace(static_cast<unsigned char>(ch)) == 0;
     });
     return std::string_view{
             s.data() + std::distance(s.begin(), it),
@@ -72,7 +72,7 @@ inline std::string_view ltrim_view(const std::string_view s)
 inline std::string_view rtrim_view(const std::string_view s)
 {
     const auto it = std::find_if(s.rbegin(), s.rend(), [](const int ch) {
-        return !std::isspace(static_cast<unsigned char>(ch));
+        return std::isspace(static_cast<unsigned char>(ch)) == 0;
     });
     return std::string_view{
             s.data(),
