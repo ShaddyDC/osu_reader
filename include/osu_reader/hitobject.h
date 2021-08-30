@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <cmath>
 #include <optional>
 #include <vector>
 
@@ -22,8 +23,16 @@ namespace osu {
         {
             return !(rhs == *this);
         }
+
+        constexpr Point operator+(const Point& rhs) const { return {x + rhs.x, y + rhs.y}; }
+        constexpr Point operator-(const Point& rhs) const { return {x - rhs.x, y - rhs.y}; }
         float x, y;
     };
+    constexpr Point operator*(const float d, const Point& p) { return {d * p.x, d * p.y}; }
+    constexpr float length_squared(const Point& p) { return p.x * p.x + p.y * p.y; }
+    constexpr float length(const Point& p) { return std::sqrt(length_squared(p)); }
+    constexpr float dot(const Point& a, const Point& b) { return a.x * b.x + a.y * b.y; }
+    constexpr Point midpoint(const Point& a, const Point& b) { return 0.5f * (a + b); }
 
     struct Hitcircle {
         Point pos;
