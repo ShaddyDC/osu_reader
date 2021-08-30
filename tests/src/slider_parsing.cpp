@@ -78,7 +78,7 @@ TEST_CASE("Linear Slider Double Point")
         CHECK(slider->length == 9);
         CHECK(slider->repeat == 7);
         CHECK(slider->time == std::chrono::milliseconds{50000});
-        CHECK(slider->segments == Segments{{{{1, 1}, {5, 1}}, osu::Slider::Slider_type::linear},
+        CHECK(slider->segments == Segments{{{{1, 1}, {5, 1}, {3, 1}}, osu::Slider::Slider_type::linear},
                                            {{{3, 1}, {6, 1}}, osu::Slider::Slider_type::linear}});
     }
 }
