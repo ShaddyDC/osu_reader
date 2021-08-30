@@ -1,4 +1,5 @@
 #pragma once
 
 #include <osu_reader/hitobject.h>
-std::vector<osu::Point> sliderpath(const osu::Slider& slider);
+
+std::vector<osu::Vector2> sliderpath(const osu::Slider& slider);

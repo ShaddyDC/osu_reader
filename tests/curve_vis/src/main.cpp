@@ -52,7 +52,7 @@ void main(void)
 }
 )GLSL";
 
-auto point_vertices(const osu::Point& p, float radius)
+auto point_vertices(const osu::Vector2& p, float radius)
 {
     return std::array{
             p.x - radius, p.y + radius, -1.f, 1.f, // Top left
@@ -95,7 +95,7 @@ auto generate_data(std::string_view slider_string)
     struct Data {
         unsigned int control_vao, curve_vao;
         int count_control, count_curve;
-        osu::Point x_bounds, y_bounds;
+        osu::Vector2 x_bounds, y_bounds;
     };
 
     const auto slider_tokens = split(slider_string, ',');

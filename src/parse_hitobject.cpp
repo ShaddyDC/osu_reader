@@ -79,7 +79,7 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
         const auto pos = std::from_chars(it->data(), it->data() + it->length(), point.x).ptr;
         std::from_chars(pos + 1, it->data() + it->length(), point.y);
 #else// TODO: remove when from_chars is more widely supported
-        osu::Point point{};
+        osu::Vector2 point{};
         std::size_t pos = 0;
         point.x = std::stof(&it->front(), &pos);
         point.y = std::stof(&it->front() + pos + 1, nullptr);

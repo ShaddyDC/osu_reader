@@ -1,4 +1,5 @@
 #pragma once
+#include "vector2.h"
 #include <chrono>
 #include <cmath>
 #include <optional>
@@ -14,28 +15,8 @@ namespace osu {
     };
 
 
-    struct Point {
-        bool operator==(const Point& rhs) const
-        {
-            return x == rhs.x && y == rhs.y;
-        }
-        bool operator!=(const Point& rhs) const
-        {
-            return !(rhs == *this);
-        }
-
-        constexpr Point operator+(const Point& rhs) const { return {x + rhs.x, y + rhs.y}; }
-        constexpr Point operator-(const Point& rhs) const { return {x - rhs.x, y - rhs.y}; }
-        float x, y;
-    };
-    constexpr Point operator*(const float d, const Point& p) { return {d * p.x, d * p.y}; }
-    constexpr float length_squared(const Point& p) { return p.x * p.x + p.y * p.y; }
-    constexpr float length(const Point& p) { return std::sqrt(length_squared(p)); }
-    constexpr float dot(const Point& a, const Point& b) { return a.x * b.x + a.y * b.y; }
-    constexpr Point midpoint(const Point& a, const Point& b) { return 0.5f * (a + b); }
-
     struct Hitcircle {
-        Point pos;
+        Vector2 pos;
         std::chrono::milliseconds time;
     };
 
@@ -48,7 +29,7 @@ namespace osu {
         };
 
         struct Segment {
-            std::vector<Point> points;
+            std::vector<Vector2> points;
             Slider_type type;
         };
 

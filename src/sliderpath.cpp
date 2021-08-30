@@ -4,22 +4,22 @@
 
 // Heavily inspired by https://github.com/ppy/osu-framework/blob/99786238a02e0d6b69da86dd52e5506ee8ec0566/osu.Framework/Utils/PathApproximator.cs
 
-static std::vector<osu::Point> approximate_linear(const std::vector<osu::Point>& control_points)
+static std::vector<osu::Vector2> approximate_linear(const std::vector<osu::Vector2>& control_points)
 {
     return control_points;
 }
 
-static void bezier_approximate(const std::vector<osu::Point>& points, std::back_insert_iterator<std::vector<osu::Point>> output_it);
-static bool bezier_is_flat_enough(const std::vector<osu::Point>& points);
-static std::pair<std::vector<osu::Point>, std::vector<osu::Point>> bezier_subdivide(std::vector<osu::Point> points);
+static void bezier_approximate(const std::vector<osu::Vector2>& points, std::back_insert_iterator<std::vector<osu::Vector2>> output_it);
+static bool bezier_is_flat_enough(const std::vector<osu::Vector2>& points);
+static std::pair<std::vector<osu::Vector2>, std::vector<osu::Vector2>> bezier_subdivide(std::vector<osu::Vector2> points);
 
-static std::vector<osu::Point> approximate_bezier(const std::vector<osu::Point>& control_points)
+static std::vector<osu::Vector2> approximate_bezier(const std::vector<osu::Vector2>& control_points)
 {
-    std::vector<osu::Point> points;
+    std::vector<osu::Vector2> points;
 
     if(control_points.empty()) return points;
 
-    std::stack<std::vector<osu::Point>> to_flatten;
+    std::stack<std::vector<osu::Vector2>> to_flatten;
 
     to_flatten.push(control_points);
 
@@ -43,7 +43,7 @@ static std::vector<osu::Point> approximate_bezier(const std::vector<osu::Point>&
     return points;
 }
 
-static bool bezier_is_flat_enough(const std::vector<osu::Point>& points)
+static bool bezier_is_flat_enough(const std::vector<osu::Vector2>& points)
 {
     constexpr const float bezier_tolerance = 0.25f;
     for(auto i = 1; i < static_cast<int>(points.size()) - 1; ++i) {
@@ -55,10 +55,10 @@ static bool bezier_is_flat_enough(const std::vector<osu::Point>& points)
 
 // Divide bezier curve into 2 separate curves of equal length
 // If pieced together, they will result in the original curve
-static std::pair<std::vector<osu::Point>, std::vector<osu::Point>> bezier_subdivide(std::vector<osu::Point> points)
+static std::pair<std::vector<osu::Vector2>, std::vector<osu::Vector2>> bezier_subdivide(std::vector<osu::Vector2> points)
 {
     const auto count = static_cast<int>(points.size());
-    std::vector<osu::Point> l(count), r(count);
+    std::vector<osu::Vector2> l(count), r(count);
 
     auto& midpoints = points;
     for(auto i = 0; i < count; ++i) {
@@ -72,7 +72,7 @@ static std::pair<std::vector<osu::Point>, std::vector<osu::Point>> bezier_subdiv
     return {l, r};
 }
 
-static void bezier_approximate(const std::vector<osu::Point>& points, std::back_insert_iterator<std::vector<osu::Point>> output_it)
+static void bezier_approximate(const std::vector<osu::Vector2>& points, std::back_insert_iterator<std::vector<osu::Vector2>> output_it)
 {
     const auto count = static_cast<int>(points.size());
 
@@ -93,10 +93,10 @@ struct Circular_properties {
     double theta_range = 0;
     double direction = 0;
     float radius = 0;
-    osu::Point centre = {0, 0};
+    osu::Vector2 centre = {0, 0};
 };
 
-Circular_properties circular_properties(const std::vector<osu::Point>& control_points)
+Circular_properties circular_properties(const std::vector<osu::Vector2>& control_points)
 {
     if(control_points.size() != 3) return {};
 
@@ -113,7 +113,7 @@ Circular_properties circular_properties(const std::vector<osu::Point>& control_p
     const auto b_sq = length_squared(b);
     const auto c_sq = length_squared(c);
 
-    const auto centre = osu::Point{
+    const auto centre = osu::Vector2{
             (a_sq * (b - c).y + b_sq * (c - a).y + c_sq * (a - b).y) / d,
             (a_sq * (c - b).x + b_sq * (a - c).x + c_sq * (b - a).x) / d};
 
@@ -140,7 +140,7 @@ Circular_properties circular_properties(const std::vector<osu::Point>& control_p
     return Circular_properties{true, theta_start, theta_range, dir, r, centre};
 }
 
-static std::vector<osu::Point> approximate_perfect(const std::vector<osu::Point>& control_points)
+static std::vector<osu::Vector2> approximate_perfect(const std::vector<osu::Vector2>& control_points)
 {
     constexpr const auto circular_arc_tolerance = 0.1;
 
@@ -157,11 +157,11 @@ static std::vector<osu::Point> approximate_perfect(const std::vector<osu::Point>
                                      ? 2
                                      : std::max(2., std::ceil(properties.theta_range / (2 * std::acos(1 - circular_arc_tolerance / properties.radius))));
 
-    std::vector<osu::Point> points;
+    std::vector<osu::Vector2> points;
     for(auto i = 0; i < point_count; ++i) {
         const auto fract = static_cast<double>(i) / (point_count - 1);
         const auto theta = properties.theta_start + properties.direction * fract * properties.theta_range;
-        points.push_back(properties.centre + properties.radius * osu::Point{static_cast<float>(std::cos(theta)), static_cast<float>(std::sin(theta))});
+        points.push_back(properties.centre + properties.radius * osu::Vector2{static_cast<float>(std::cos(theta)), static_cast<float>(std::sin(theta))});
     }
 
     // Failure for some reason. Maybe worth logging to investigate? Same behaviour as lazer
@@ -170,7 +170,7 @@ static std::vector<osu::Point> approximate_perfect(const std::vector<osu::Point>
     return points;
 }
 
-static osu::Point catmull_find_point(const osu::Point& v1, const osu::Point& v2, const osu::Point& v3, const osu::Point& v4, double t)
+static osu::Vector2 catmull_find_point(const osu::Vector2& v1, const osu::Vector2& v2, const osu::Vector2& v3, const osu::Vector2& v4, double t)
 {
     const auto t2 = t * t;
     const auto t3 = t * t2;
@@ -180,10 +180,10 @@ static osu::Point catmull_find_point(const osu::Point& v1, const osu::Point& v2,
             static_cast<float>(0.5 * (2 * v2.y + (-v1.y + v3.y) * t + (2 * v1.y - 5 * v2.y + 4 * v3.y - v4.y) * t2 + (-v1.y + 3 * v2.y - 3 * v3.y + v4.y) * t3))};
 }
 
-static std::vector<osu::Point> approximate_catmull(const std::vector<osu::Point>& control_points)
+static std::vector<osu::Vector2> approximate_catmull(const std::vector<osu::Vector2>& control_points)
 {
     const constexpr auto catmull_detail = 50;
-    std::vector<osu::Point> points;
+    std::vector<osu::Vector2> points;
     points.reserve((control_points.size() - 1) * catmull_detail * 2);
 
     for(auto i = 0; i < static_cast<int>(control_points.size()) - 1; ++i) {
@@ -200,9 +200,9 @@ static std::vector<osu::Point> approximate_catmull(const std::vector<osu::Point>
     return points;
 }
 
-std::vector<osu::Point> sliderpath(const osu::Slider& slider)
+std::vector<osu::Vector2> sliderpath(const osu::Slider& slider)
 {
-    std::vector<osu::Point> path;
+    std::vector<osu::Vector2> path;
 
     for(const auto& segment : slider.segments) {
         const auto points = [](const auto& segment) {
