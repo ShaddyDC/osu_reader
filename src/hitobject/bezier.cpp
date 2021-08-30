@@ -2,10 +2,13 @@
 #include "sliderpath.h"
 #include <cmath>
 #include <stack>
+
 static bool bezier_is_flat_enough(const std::vector<osu::Vector2>& points);
 static std::pair<std::vector<osu::Vector2>, std::vector<osu::Vector2>> bezier_subdivide(std::vector<osu::Vector2> points);
 static void bezier_approximate(const std::vector<osu::Vector2>& points, std::back_insert_iterator<std::vector<osu::Vector2>> output_it);
 
+
+// TODO: Consider reusing buffers
 std::vector<osu::Vector2> approximate_bezier(const std::vector<osu::Vector2>& control_points)
 {
     std::vector<osu::Vector2> points;
@@ -35,6 +38,7 @@ std::vector<osu::Vector2> approximate_bezier(const std::vector<osu::Vector2>& co
     points.push_back(control_points.back());
     return points;
 }
+
 static bool bezier_is_flat_enough(const std::vector<osu::Vector2>& points)
 {
     constexpr const float bezier_tolerance = 0.25f;
@@ -43,7 +47,9 @@ static bool bezier_is_flat_enough(const std::vector<osu::Vector2>& points)
             return false;
     }
     return true;
-}// Divide bezier curve into 2 separate curves of equal length
+}
+
+// Divide bezier curve into 2 separate curves of equal length
 // If pieced together, they will result in the original curve
 static std::pair<std::vector<osu::Vector2>, std::vector<osu::Vector2>> bezier_subdivide(std::vector<osu::Vector2> points)
 {
@@ -61,6 +67,7 @@ static std::pair<std::vector<osu::Vector2>, std::vector<osu::Vector2>> bezier_su
     }
     return {l, r};
 }
+
 static void bezier_approximate(const std::vector<osu::Vector2>& points, std::back_insert_iterator<std::vector<osu::Vector2>> output_it)
 {
     const auto count = static_cast<int>(points.size());
