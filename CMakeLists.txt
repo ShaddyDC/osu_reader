@@ -29,8 +29,12 @@ set(Shosu_SOURCES
         src/beatmap_parser.cpp
         src/string_stuff.cpp
         src/replay.cpp
-        src/parse_hitobject.cpp
-        src/sliderpath.cpp)
+        src/hitobject/parse_hitobject.cpp
+        src/hitobject/sliderpath.cpp
+        src/hitobject/bezier.cpp
+        src/hitobject/perfect_circle.cpp
+        src/hitobject/catmull.cpp
+        )
 
 add_library(osuReader ${Shosu_SOURCES})
 

@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include <parse_hitobject.h>
+#include <hitobject/parse_hitobject.h>
 #include <string_stuff.h>
 
 using Segments = std::vector<osu::Slider::Segment>;

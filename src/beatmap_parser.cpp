@@ -1,5 +1,5 @@
 #include "beatmap_parser.h"
-#include "parse_hitobject.h"
+#include "hitobject/parse_hitobject.h"
 #include "parse_string.h"
 #include "timingpoints_helper.h"
 #include "util.h"

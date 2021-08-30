@@ -5,9 +5,9 @@
 #include <GLFW/glfw3.h>
 
 #include <array>
+#include <hitobject/parse_hitobject.h>
+#include <hitobject/sliderpath.h>
 #include <iostream>
-#include <parse_hitobject.h>
-#include <sliderpath.h>
 #include <string_stuff.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
