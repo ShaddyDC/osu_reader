@@ -22,7 +22,7 @@ private:
 };
 
 template<typename Type>
-std::optional<Type> Binary_reader<std::ifstream>::read_type()
+inline std::optional<Type> Binary_reader<std::ifstream>::read_type()
 {
     Type value;
     if(input.read(reinterpret_cast<char*>(&value), sizeof(value)))
@@ -30,7 +30,7 @@ std::optional<Type> Binary_reader<std::ifstream>::read_type()
     return std::nullopt;
 }
 
-std::optional<std::vector<char>> Binary_reader<std::ifstream>::read_bytes(const int num)
+inline std::optional<std::vector<char>> Binary_reader<std::ifstream>::read_bytes(const int num)
 {
     std::vector<char> buffer(num);
     if(input.read(buffer.data(), num))
@@ -53,7 +53,7 @@ private:
 };
 
 template<typename Type>
-std::optional<Type> Binary_reader<std::string_view>::read_type()
+inline std::optional<Type> Binary_reader<std::string_view>::read_type()
 {
     if(index + sizeof(Type) > input.size()) return std::nullopt;
     Type value = *reinterpret_cast<const Type*>(&(input[index]));
@@ -61,7 +61,7 @@ std::optional<Type> Binary_reader<std::string_view>::read_type()
     return value;
 }
 
-std::optional<std::vector<char>> Binary_reader<std::string_view>::read_bytes(const int num)
+inline std::optional<std::vector<char>> Binary_reader<std::string_view>::read_bytes(const int num)
 {
     if(index + num > static_cast<int>(input.size())) return std::nullopt;
     std::vector<char> buffer{input.begin() + index, input.begin() + index + num};

@@ -11,9 +11,6 @@ namespace osu {
     using Mods = int;
 
     struct Replay {
-        [[nodiscard]] static std::optional<Replay> from_file(const std::filesystem::path& file_path, bool parse_frames = false);
-        [[nodiscard]] static std::optional<Replay> from_string(std::string_view content, bool parse_frames = false);
-
         struct Replay_frame {
             std::chrono::milliseconds time;
             float x, y;

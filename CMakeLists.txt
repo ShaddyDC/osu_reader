@@ -25,7 +25,6 @@ endif (ENABLE_LZMA)
 
 # Sources
 set(Shosu_SOURCES
-        src/beatmap.cpp
         src/beatmap_parser.cpp
         src/string_stuff.cpp
         src/replay.cpp
@@ -34,6 +33,7 @@ set(Shosu_SOURCES
         src/hitobject/bezier.cpp
         src/hitobject/perfect_circle.cpp
         src/hitobject/catmull.cpp
+        src/replay_reader.cpp
         )
 
 add_library(osuReader ${Shosu_SOURCES})

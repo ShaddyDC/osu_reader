@@ -1,6 +1,6 @@
 #pragma once
 #include "osu_reader/beatmap.h"
-#include <functional>
+#include <functional>// TODO: Reconsider include necessity
 #include <optional>
 
 namespace osu {
@@ -10,6 +10,9 @@ namespace osu {
         Beatmap_parser() = default;
         Beatmap_parser(const Beatmap_parser&) = delete;
         const Beatmap_parser& operator==(const Beatmap_parser&) = delete;
+
+        std::optional<Beatmap> from_string(const std::string_view beatmap_content);
+        std::optional<Beatmap> from_file(const std::filesystem::path& file_path);
 
         std::optional<Beatmap> parse_impl(const std::function<std::optional<std::string>()>& line_provider);
 

@@ -1,15 +1,19 @@
 #include "file_string.h"
 #include <catch2/catch.hpp>
-#include <osu_reader/beatmap.h>
+#include <osu_reader/beatmap_parser.h>
 
 using namespace std::chrono_literals;
 
 TEST_CASE("Nanatsu Koyoto")
 {
     static constexpr const char* filename = "res/A.SAKA - Nanatsu Koyoto (ailv) [Extra].osu";
-    const auto bm_e = GENERATE(
-            osu::Beatmap::from_file(filename),
-            osu::Beatmap::from_string(file_string(filename)));
+
+    // Captured in GENERATE_REF, has to outlive scope
+    static auto parser = osu::Beatmap_parser{};
+
+    const auto bm_e = GENERATE_REF(
+            parser.from_file(filename),
+            parser.from_string(file_string(filename)));
 
     REQUIRE(bm_e.has_value());
 
