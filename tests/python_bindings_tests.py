@@ -10,7 +10,9 @@ class BeatmapTest(unittest.TestCase):
         with open(file, 'r') as f:
             content = f.read()
 
-        for bm in [pyshosu.beatmap_file(file), pyshosu.beatmap_string(content)]:
+        parser = pyshosu.Beatmap_parser()
+
+        for bm in [parser.from_file(file), parser.from_string(content)]:
             self.assertEqual(bm.version, 14)
             self.assertEqual(bm.countdown, 1)
             self.assertEqual(bm.sample_set, "Soft")
@@ -27,7 +29,10 @@ class ReplayTest(unittest.TestCase):
         with open(file, 'rb') as f:
             content = f.read()
 
-        for r in [pyshosu.replay_file(file, True), pyshosu.replay_string(content, True)]:
+        reader = pyshosu.Replay_reader()
+        reader.parse_frames = True
+
+        for r in [reader.from_file(file), reader.from_string(content)]:
             self.assertEqual(r.mode, pyshosu.Gamemode.osu)
             self.assertEqual(r.game_version, 20181231)
             self.assertEqual(r.map_hash, "da8aae79c8f3306b5d65ec951874a7fb")

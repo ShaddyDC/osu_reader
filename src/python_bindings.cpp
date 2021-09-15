@@ -1,5 +1,7 @@
 #include "osu_reader/beatmap.h"
+#include "osu_reader/beatmap_parser.h"
 #include "osu_reader/replay.h"
+#include "osu_reader/replay_reader.h"
 #include <pybind11/chrono.h>
 #include <pybind11/stl.h>
 
@@ -117,8 +119,10 @@ static void beatmap_bindings(py::module& m)
                      return "<pyshosu.Beatmap.Timingpoint '" + std::to_string(t.time.count()) + " - " + std::to_string(t.beat_duration.count()) + "'>";
                  });
 
-    m.def("beatmap_file", &osu::Beatmap::from_file, "Load beatmap from file");
-    m.def("beatmap_string", &osu::Beatmap::from_string, "Load beatmap from string");
+    py::class_<osu::Beatmap_parser>(m, "Beatmap_parser")
+            .def(py::init())
+            .def("from_string", &osu::Beatmap_parser::from_string)
+            .def("from_file", &osu::Beatmap_parser::from_file);
 }
 
 static void replay_bindings(py::module& m)
@@ -161,9 +165,11 @@ static void replay_bindings(py::module& m)
                      return "<pyshosu.Replay '" + r.map_hash + " - " + r.player_name + "'>";
                  });
 
-
-    m.def("replay_file", &osu::Replay::from_file, "Load replay from file", py::arg("file_path"), py::arg("parse_frames") = false);
-    m.def("replay_string", &osu::Replay::from_string, "Load replay from string", py::arg("content"), py::arg("parse_frames") = false);
+    py::class_<osu::Replay_reader>(m, "Replay_reader")
+            .def(py::init())
+            .def_readwrite("parse_frames", &osu::Replay_reader::parse_frames)
+            .def("from_string", &osu::Replay_reader::from_string)
+            .def("from_file", &osu::Replay_reader::from_file);
 }
 
 PYBIND11_MODULE(pyshosu, m)
