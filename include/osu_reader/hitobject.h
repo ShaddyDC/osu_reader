@@ -37,6 +37,8 @@ namespace osu {
         std::chrono::milliseconds duration;
         Slider_type type;
         std::vector<Segment> segments;
+        std::vector<Vector2> points;
+        std::vector<float> distances;
         int repeat;
         float length;
     };

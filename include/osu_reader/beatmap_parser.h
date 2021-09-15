@@ -14,7 +14,8 @@ namespace osu {
         std::optional<Beatmap> from_string(const std::string_view beatmap_content);
         std::optional<Beatmap> from_file(const std::filesystem::path& file_path);
 
-        std::optional<Beatmap> parse_impl(const std::function<std::optional<std::string>()>& line_provider);
+        /// Determines if slider paths are computed
+        bool slider_paths = false;
 
     private:
         enum class Section {
@@ -28,6 +29,8 @@ namespace osu {
             hitobjects,
             none
         };
+
+        std::optional<Beatmap> parse_impl(const std::function<std::optional<std::string>()>& line_provider);
 
         void parse_general(std::string_view line);
         void parse_editor(std::string_view line);

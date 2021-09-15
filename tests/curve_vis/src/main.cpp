@@ -6,8 +6,8 @@
 
 #include <array>
 #include <hitobject/parse_hitobject.h>
-#include <hitobject/sliderpath.h>
 #include <iostream>
+#include <osu_reader/sliderpath.h>
 #include <string_stuff.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);

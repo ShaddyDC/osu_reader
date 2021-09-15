@@ -1,4 +1,4 @@
-#include "sliderpath.h"
+#include "osu_reader/sliderpath.h"
 #include "bezier.h"
 #include "catmull.h"
 #include "perfect_circle.h"
@@ -11,7 +11,7 @@ static std::vector<osu::Vector2> approximate_linear(const std::vector<osu::Vecto
 }
 
 
-std::vector<osu::Vector2> sliderpath(const osu::Slider& slider)
+std::vector<osu::Vector2> osu::sliderpath(const osu::Slider& slider)
 {
     std::vector<osu::Vector2> path;
 

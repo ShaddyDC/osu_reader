@@ -4,6 +4,7 @@
 #include "timingpoints_helper.h"
 #include "util.h"
 #include <fstream>
+#include <osu_reader/sliderpath.h>
 #include <variant>
 
 std::optional<osu::Beatmap> osu::Beatmap_parser::from_file(const std::filesystem::path& file_path)
@@ -17,7 +18,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::from_file(const std::filesystem
         return line;
     };
 
-    return Beatmap_parser{}.parse_impl(line_provider);
+    return parse_impl(line_provider);
 }
 
 std::optional<osu::Beatmap> osu::Beatmap_parser::from_string(const std::string_view beatmap_content)
@@ -35,7 +36,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::from_string(const std::string_v
         return std::string{beatmap_content.substr(tmp_pos, pos - tmp_pos)};
     };
 
-    return Beatmap_parser{}.parse_impl(line_provider);
+    return parse_impl(line_provider);
 }
 
 using Beatmap_types = std::variant<int osu::Beatmap::*, float osu::Beatmap::*, bool osu::Beatmap::*,
@@ -230,6 +231,15 @@ void osu::Beatmap_parser::parse_hitobject(std::string_view line)
                         slider->length / (beatmap_.slider_multiplier * 100.f) * current_timingpoint_->beat_duration);
             }
 
+            if(slider_paths) {
+                slider->points = sliderpath(*slider);
+                auto distance = 0.f;
+                for(auto i = 1; i < static_cast<signed>(slider->points.size()); ++i) {
+                    distance += length((slider->points[i] - slider->points[i - 1]));
+                    slider->distances.push_back(distance);
+                }
+            }
+
             beatmap_.sliders.push_back(*slider);
         }
     } else if((type & static_cast<int>(Hitobject_type::spinner)) != 0) {
@@ -290,6 +300,8 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<
 
     if(!line) return std::nullopt;
 
+    beatmap_ = Beatmap{};// Clear beatmap
+
     const auto format_utf16 = maybe_parse_utfheader(*line)
                                       ? [](std::string& s) {
                                             s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
@@ -334,7 +346,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<
         line = line_provider();
     }
 
-    return beatmap_;
+    return std::move(beatmap_);
 }
 
 osu::Beatmap_parser::Section osu::Beatmap_parser::parse_section(std::string_view line)
