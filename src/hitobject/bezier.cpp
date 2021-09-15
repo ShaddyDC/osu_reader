@@ -30,8 +30,8 @@ std::vector<osu::Vector2> approximate_bezier(const std::vector<osu::Vector2>& co
         // Not const to allow moving
         auto [l, r] = bezier_subdivide(parent);
 
-        to_flatten.push(l);
         to_flatten.push(r);
+        to_flatten.push(l);
     }
 
     points.push_back(control_points.back());
@@ -55,7 +55,7 @@ static std::pair<std::vector<osu::Vector2>, std::vector<osu::Vector2>> bezier_su
     const auto count = static_cast<int>(points.size());
     std::vector<osu::Vector2> l(count), r(count);
 
-    auto& midpoints = points;
+    auto midpoints = points;
     for(auto i = 0; i < count; ++i) {
         l[i] = midpoints[0];
         r[count - i - 1] = midpoints[count - i - 1];
@@ -78,6 +78,6 @@ static void bezier_approximate(const std::vector<osu::Vector2>& points, std::bac
 
     for(auto i = 1; i < count - 1; ++i) {
         const auto index = 2 * i;
-        *output_it = 0.25f * (l[index - 1] + 2 * l[index] + l[index + 1]);
+        *output_it++ = 0.25f * (l[index - 1] + 2 * l[index] + l[index + 1]);
     }
 }

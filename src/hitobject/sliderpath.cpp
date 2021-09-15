@@ -56,14 +56,22 @@ void osu::fix_slider_length(osu::Slider& slider)
     if(slider.distances.size() != slider.points.size()) return;// TODO: Log or something?
 
     if(slider.distances.back() > slider.length) {
-        while(!slider.points.empty() && slider.distances.back() > slider.length) {
+        while(slider.points.size() >= 2 && *(slider.distances.end() - 2) >= slider.length) {
             slider.distances.pop_back();
             slider.points.pop_back();
+        }
+        if(slider.points.size() >= 2 && slider.distances.back() > slider.length) {// Interpolate within the last segment
+            const auto direction = normal(slider.points.back() - *(slider.points.end() - 2));
+            slider.distances.pop_back();
+            slider.points.pop_back();
+            const auto length = slider.length - slider.distances.back();
+            slider.distances.push_back(slider.length);
+            slider.points.push_back(slider.points.back() + length * direction);
         }
     }
     if(slider.distances.back() < slider.length && slider.points.size() >= 2) {// Lengthen last segment
         const auto direction = normal(slider.points.back() - *(slider.points.end() - 2));
-        const auto length = slider.distances.back() - slider.length;
+        const auto length = slider.length - slider.distances.back();
         slider.distances.push_back(slider.length);
         slider.points.push_back(slider.points.back() + length * direction);
     }
