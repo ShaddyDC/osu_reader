@@ -233,11 +233,8 @@ void osu::Beatmap_parser::parse_hitobject(std::string_view line)
 
             if(slider_paths) {
                 slider->points = sliderpath(*slider);
-                auto distance = 0.f;
-                for(auto i = 1; i < static_cast<signed>(slider->points.size()); ++i) {
-                    distance += length((slider->points[i] - slider->points[i - 1]));
-                    slider->distances.push_back(distance);
-                }
+                slider->distances = pathlengths(slider->points);
+                fix_slider_length(*slider);
             }
 
             beatmap_.sliders.push_back(*slider);

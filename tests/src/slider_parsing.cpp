@@ -1,5 +1,6 @@
 #include <catch2/catch.hpp>
 #include <hitobject/parse_hitobject.h>
+#include <osu_reader/sliderpath.h>
 #include <string_stuff.h>
 
 using Segments = std::vector<osu::Slider::Segment>;
@@ -177,4 +178,16 @@ TEST_CASE("Perfect Curve Slider co-linear to linear")
         CHECK(slider->time == std::chrono::milliseconds{50000});
         CHECK(slider->segments == Segments{{{{1, 1}, {3, 1}, {5, 1}}, osu::Slider::Slider_type::linear}});
     }
+}
+
+TEST_CASE("Butterfly length")
+{
+    const auto slider_string = "256,192,74363,118,0,B|208:4|8:8|8:8|40:36|48:63|48:63|44:104|44:104|92:128|76:188|76:188|112:204|152:192|152:192|56:248|32:360|32:360|64:332|100:332|100:332|152:348|196:320|196:320|216:280|256:276|256:276|261:255|261:255|254:246|254:246|259:238|259:238|251:236|251:236|263:225|263:225|253:214|253:214|262:205|262:205|256:201|256:201|256:160,1,1200.0479469394";
+    const auto slider_tokens = split(slider_string, ',');
+    auto slider = parse_slider(slider_tokens);
+    slider->points = osu::sliderpath(slider.value());
+    slider->distances = osu::pathlengths(slider->points);
+    osu::fix_slider_length(*slider);// TODO: Test fails without this. Need to investigate if that's intended or something is off
+
+    CHECK(slider->length == slider->distances.back());
 }

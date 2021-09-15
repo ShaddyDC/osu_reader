@@ -35,3 +35,36 @@ std::vector<osu::Vector2> osu::sliderpath(const osu::Slider& slider)
 
     return path;
 }
+
+std::vector<float> osu::pathlengths(const std::vector<osu::Vector2>& points)
+{
+    std::vector<float> distances{0};
+    distances.reserve(points.size() + 1);
+
+    auto distance = 0.f;
+    for(auto i = 1; i < static_cast<signed>(points.size()); ++i) {
+        distance += length((points[i] - points[i - 1]));
+        distances.push_back(distance);
+    }
+
+    return distances;
+}
+
+void osu::fix_slider_length(osu::Slider& slider)
+{
+    if(slider.distances.empty()) return;
+    if(slider.distances.size() != slider.points.size()) return;// TODO: Log or something?
+
+    if(slider.distances.back() > slider.length) {
+        while(!slider.points.empty() && slider.distances.back() > slider.length) {
+            slider.distances.pop_back();
+            slider.points.pop_back();
+        }
+    }
+    if(slider.distances.back() < slider.length && slider.points.size() >= 2) {// Lengthen last segment
+        const auto direction = normal(slider.points.back() - *(slider.points.end() - 2));
+        const auto length = slider.distances.back() - slider.length;
+        slider.distances.push_back(slider.length);
+        slider.points.push_back(slider.points.back() + length * direction);
+    }
+}
