@@ -1,5 +1,5 @@
 #include "parse_hitobject.h"
-#include "parse_string.h"
+#include "osu_reader/parse_string.h"
 #include <array>
 
 std::optional<osu::Hitcircle> parse_circle(const std::vector<std::string_view>& tokens)

@@ -1,4 +1,4 @@
-#include "string_stuff.h"
+#include "osu_reader/string_stuff.h"
 
 std::vector<std::string_view> split(const std::string_view s, const char delim)
 {
