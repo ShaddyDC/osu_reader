@@ -1,5 +1,9 @@
 #include "osu_reader/replay_reader.h"
 
+#ifdef ENABLE_LZMA
+#include <lzma.h>
+#endif
+
 std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::path& file_path)
 {
     std::ifstream file{file_path, std::ios::binary};

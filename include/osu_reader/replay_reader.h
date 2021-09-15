@@ -7,17 +7,13 @@
 #include <osu_reader/replay.h>
 #include <variant>
 
-// TODO: Don't import LZMA in user code
-#ifdef ENABLE_LZMA
-#include <lzma.h>
-#endif
-
 namespace osu {
     class Replay_reader {
     public:
         std::optional<osu::Replay> from_file(const std::filesystem::path& file_path);
         std::optional<osu::Replay> from_string(const std::string_view content);
 
+        ///  Determines if replay frames should be parsed. Requires xz to decompress lzma
         bool parse_frames = false;
 
     private:
