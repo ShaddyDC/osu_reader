@@ -180,6 +180,45 @@ TEST_CASE("Perfect Curve Slider co-linear to linear")
     }
 }
 
+TEST_CASE("Extend linear slider")
+{
+    const auto slider_string = "1,1,50000,2,0,L|5:1,7,19";
+    const auto slider_tokens = osu::split(slider_string, ',');
+    auto slider = parse_slider(slider_tokens);
+    slider->points = osu::sliderpath(slider.value());
+    slider->distances = osu::pathlengths(slider->points);
+    osu::fix_slider_length(*slider);
+
+    CHECK(slider->length == slider->distances.back());
+    CHECK(slider->points.back() == osu::Vector2{20, 1});
+}
+
+TEST_CASE("Shorten linear slider")
+{
+    const auto slider_string = "1,1,50000,2,0,L|21:1,7,10";
+    const auto slider_tokens = osu::split(slider_string, ',');
+    auto slider = parse_slider(slider_tokens);
+    slider->points = osu::sliderpath(slider.value());
+    slider->distances = osu::pathlengths(slider->points);
+    osu::fix_slider_length(*slider);
+
+    CHECK(slider->length == slider->distances.back());
+    CHECK(slider->points.back() == osu::Vector2{11, 1});
+}
+
+TEST_CASE("Shorten linear slider on point")
+{
+    const auto slider_string = "1,1,50000,2,0,L|11:1|21:1,7,10";
+    const auto slider_tokens = osu::split(slider_string, ',');
+    auto slider = parse_slider(slider_tokens);
+    slider->points = osu::sliderpath(slider.value());
+    slider->distances = osu::pathlengths(slider->points);
+    osu::fix_slider_length(*slider);
+
+    CHECK(slider->length == slider->distances.back());
+    CHECK(slider->points.back() == osu::Vector2{11, 1});
+}
+
 TEST_CASE("Butterfly length")
 {
     const auto slider_string = "256,192,74363,118,0,B|208:4|8:8|8:8|40:36|48:63|48:63|44:104|44:104|92:128|76:188|76:188|112:204|152:192|152:192|56:248|32:360|32:360|64:332|100:332|100:332|152:348|196:320|196:320|216:280|256:276|256:276|261:255|261:255|254:246|254:246|259:238|259:238|251:236|251:236|263:225|263:225|253:214|253:214|262:205|262:205|256:201|256:201|256:160,1,1200.0479469394";
@@ -187,7 +226,7 @@ TEST_CASE("Butterfly length")
     auto slider = parse_slider(slider_tokens);
     slider->points = osu::sliderpath(slider.value());
     slider->distances = osu::pathlengths(slider->points);
-    osu::fix_slider_length(*slider);// TODO: Test fails without this. Need to investigate if that's intended or something is off
+    osu::fix_slider_length(*slider);
 
     CHECK(slider->length == slider->distances.back());
 }
