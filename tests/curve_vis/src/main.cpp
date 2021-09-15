@@ -8,7 +8,7 @@
 #include <hitobject/parse_hitobject.h>
 #include <iostream>
 #include <osu_reader/sliderpath.h>
-#include <string_stuff.h>
+#include <osu_reader/string_stuff.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -98,7 +98,7 @@ auto generate_data(std::string_view slider_string)
         osu::Vector2 x_bounds, y_bounds;
     };
 
-    const auto slider_tokens = split(slider_string, ',');
+    const auto slider_tokens = osu::split(slider_string, ',');
     const auto slider = parse_slider(slider_tokens).value();
 
     if(slider.segments.empty() || slider.segments.front().points.empty()) throw std::runtime_error{"Empty slider"};

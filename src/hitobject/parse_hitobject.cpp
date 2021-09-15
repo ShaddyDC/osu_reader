@@ -13,9 +13,9 @@ std::optional<osu::Hitcircle> parse_circle(const std::vector<std::string_view>& 
         extras
     };
     osu::Hitcircle circle{};
-    parse_value(tokens[x], circle.pos.x);
-    parse_value(tokens[y], circle.pos.y);
-    parse_value(tokens[time], circle.time);
+    osu::parse_value(tokens[x], circle.pos.x);
+    osu::parse_value(tokens[y], circle.pos.y);
+    osu::parse_value(tokens[time], circle.time);
 
     return circle;
 }
@@ -40,15 +40,15 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
 
     osu::Slider slider{};
 
-    parse_value(tokens[time], slider.time);
-    parse_value(tokens[repeat], slider.repeat);
-    parse_value(tokens[length], slider.length);
+    osu::parse_value(tokens[time], slider.time);
+    osu::parse_value(tokens[repeat], slider.repeat);
+    osu::parse_value(tokens[length], slider.length);
 
     // Parse slider type and points
-    auto sub_tokens = split(tokens[slider_data], '|');
+    auto sub_tokens = osu::split(tokens[slider_data], '|');
     if(sub_tokens.size() < 2) return std::nullopt;// Format: B|380:120|332:96|332:96|304:124
     std::transform(sub_tokens.begin(), sub_tokens.end(),
-                   sub_tokens.begin(), ltrim_view);
+                   sub_tokens.begin(), osu::ltrim_view);
 
     const constexpr auto valid_slider_type = [](const char slider_type) {
         const static constexpr std::array<osu::Slider::Slider_type, 4> slider_types{
@@ -64,7 +64,7 @@ std::optional<osu::Slider> parse_slider(const std::vector<std::string_view>& tok
     slider.segments.emplace_back();
     slider.segments.back().type = slider.type = static_cast<osu::Slider::Slider_type>(sub_tokens[0].front());
 
-    slider.segments.back().points.push_back({parse_value<float>(tokens[x]), parse_value<float>(tokens[y])});
+    slider.segments.back().points.push_back({osu::parse_value<float>(tokens[x]), osu::parse_value<float>(tokens[y])});
 
     for(auto it = sub_tokens.cbegin() + 1; it != sub_tokens.cend(); ++it) {
         if(it->length() == 1) {// new slider type begin. Is this actually a thing though??
@@ -126,6 +126,6 @@ std::optional<osu::Spinner> parse_spinner(const std::vector<std::string_view>& t
     };
 
     if(tokens.size() < 6) return std::nullopt;
-    return osu::Spinner{parse_value<std::chrono::milliseconds>(tokens[time]),
-                        parse_value<std::chrono::milliseconds>(tokens[end_time])};
+    return osu::Spinner{osu::parse_value<std::chrono::milliseconds>(tokens[time]),
+                        osu::parse_value<std::chrono::milliseconds>(tokens[end_time])};
 }

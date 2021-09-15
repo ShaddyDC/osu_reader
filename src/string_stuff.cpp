@@ -1,6 +1,6 @@
 #include "osu_reader/string_stuff.h"
 
-std::vector<std::string_view> split(const std::string_view s, const char delim)
+std::vector<std::string_view> osu::split(const std::string_view s, const char delim)
 {
     std::vector<std::string_view> ret;
     const auto* it = s.begin();
