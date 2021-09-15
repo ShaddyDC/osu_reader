@@ -1,6 +1,6 @@
 #include "osu_reader/replay_reader.h"
 
-std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::path& file_path, bool parse_frames)
+std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::path& file_path)
 {
     std::ifstream file{file_path, std::ios::binary};
     if(!file.is_open()) return std::nullopt;
@@ -17,7 +17,7 @@ std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::
     return replay;
 }
 
-std::optional<osu::Replay> osu::Replay_reader::from_string(std::string_view content, bool parse_frames)
+std::optional<osu::Replay> osu::Replay_reader::from_string(std::string_view content)
 {
     provider = Binary_reader<std::string_view>{content};
 

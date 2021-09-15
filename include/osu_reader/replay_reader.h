@@ -15,12 +15,14 @@
 namespace osu {
     class Replay_reader {
     public:
-        std::optional<osu::Replay> from_file(const std::filesystem::path& file_path, bool parse_frames);
-        std::optional<osu::Replay> from_string(const std::string_view content, bool parse_frames);
+        std::optional<osu::Replay> from_file(const std::filesystem::path& file_path);
+        std::optional<osu::Replay> from_string(const std::string_view content);
 
-        std::optional<Replay> parse_replay();
+        bool parse_frames = false;
 
     private:
+        std::optional<Replay> parse_replay();
+
         template<typename Type>
         bool read_type(Type& value);
         bool read_type(std::string& value);
