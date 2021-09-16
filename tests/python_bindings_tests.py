@@ -11,6 +11,7 @@ class BeatmapTest(unittest.TestCase):
             content = f.read()
 
         parser = pyshosu.Beatmap_parser()
+        parser.slider_paths = True
 
         for bm in [parser.from_file(file), parser.from_string(content)]:
             self.assertEqual(bm.version, 14)
@@ -20,6 +21,7 @@ class BeatmapTest(unittest.TestCase):
 
             self.assertEqual(bm.title, "Nanatsu Koyoto")
 
+            self.assertTrue(bm.sliders[0].points)
 
 
 class ReplayTest(unittest.TestCase):

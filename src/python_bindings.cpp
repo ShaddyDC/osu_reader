@@ -40,6 +40,8 @@ static void beatmap_bindings(py::module& m)
             .def_readwrite("duration", &osu::Slider::duration)
             .def_readwrite("type", &osu::Slider::type)
             .def_readwrite("segments", &osu::Slider::segments)
+            .def_readwrite("points", &osu::Slider::points)
+            .def_readwrite("distances", &osu::Slider::distances)
             .def_readwrite("repeat", &osu::Slider::repeat)
             .def_readwrite("length", &osu::Slider::length)
             .def("__repr__",
@@ -121,6 +123,7 @@ static void beatmap_bindings(py::module& m)
 
     py::class_<osu::Beatmap_parser>(m, "Beatmap_parser")
             .def(py::init())
+            .def_readwrite("slider_paths", &osu::Beatmap_parser::slider_paths)
             .def("from_string", &osu::Beatmap_parser::from_string)
             .def("from_file", &osu::Beatmap_parser::from_file);
 }
