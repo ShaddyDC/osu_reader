@@ -52,6 +52,30 @@ void main(void)
 }
 )GLSL";
 
+struct VAO {
+    unsigned int vbo = 0, vao = 0;
+    VAO() = default;
+    VAO(VAO&& other)
+    noexcept : vbo(other.vbo), vao(other.vao)
+    {
+        other.vbo = 0;
+        other.vao = 0;
+    }
+    VAO& operator=(VAO&& other) noexcept
+    {
+        vbo = other.vbo;
+        vao = other.vao;
+        other.vbo = 0;
+        other.vao = 0;
+        return *this;
+    }
+    ~VAO()
+    {
+        if(vbo != 0) glDeleteBuffers(1, &vbo);
+        if(vao != 0) glDeleteVertexArrays(1, &vao);
+    }
+};
+
 auto point_vertices(const osu::Vector2& p, float radius)
 {
     return std::array{
@@ -67,13 +91,14 @@ auto point_vertices(const osu::Vector2& p, float radius)
 
 auto verts_to_vao(const std::vector<float>& verts)
 {
-    unsigned int VBO = 0, VAO = 0;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
+    VAO instance{};
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenVertexArrays(1, &instance.vao);
+    glGenBuffers(1, &instance.vbo);
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    glBindVertexArray(instance.vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, instance.vbo);
     glBufferData(GL_ARRAY_BUFFER, static_cast<int>(verts.size() * sizeof(verts.front())), verts.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
@@ -83,40 +108,23 @@ auto verts_to_vao(const std::vector<float>& verts)
 
     glBindVertexArray(0);
 
-    // Note we're leaking VBO, but that doesn't really matter in the scope of this program
-
-    return VAO;
+    return instance;
 }
 
-auto generate_data(std::string_view slider_string)
+auto generate_data(const osu::Slider& slider)
 {
     constexpr const auto curve_radius = 0.75f;
     constexpr const auto control_radius = curve_radius * 0.6f;
     struct Data {
-        unsigned int control_vao, curve_vao;
+        VAO control_vao, curve_vao;
         int count_control, count_curve;
-        osu::Vector2 x_bounds, y_bounds;
     };
-
-    const auto slider_tokens = osu::split(slider_string, ',');
-    const auto slider = parse_slider(slider_tokens).value();
-
-    if(slider.segments.empty() || slider.segments.front().points.empty()) throw std::runtime_error{"Empty slider"};
 
     Data data{};
 
-    // Init bounds
-    data.x_bounds = {slider.segments.front().points.front().x, slider.segments.front().points.front().x};
-    data.y_bounds = {slider.segments.front().points.front().y, slider.segments.front().points.front().y};
-
     // Functor to handle control and curve points
-    const auto handle_point = [&data, control_radius](auto output, auto radius) {
-        return [&data, radius, output](const auto& p) {
-            if(p.x - radius < data.x_bounds.x) data.x_bounds.x = p.x - radius;
-            if(p.x + radius > data.x_bounds.y) data.x_bounds.y = p.x + radius;
-            if(p.y - radius < data.y_bounds.x) data.y_bounds.x = p.y - radius;
-            if(p.y + radius > data.y_bounds.y) data.y_bounds.y = p.y + radius;
-
+    const auto handle_point = [](auto output, auto radius) {
+        return [radius, output](const auto& p) {
             const auto verts = point_vertices(p, radius);
             std::copy(verts.cbegin(), verts.cend(), output);
         };
@@ -131,27 +139,77 @@ auto generate_data(std::string_view slider_string)
     data.count_control = static_cast<int>(control_vertices.size());
     data.control_vao = verts_to_vao(control_vertices);
 
-    // Curve points
-    const auto curve_points = sliderpath(slider);
+    // Curve
     std::vector<float> curve_vertices;
-    std::for_each(curve_points.cbegin(), curve_points.cend(), handle_point(std::back_inserter(curve_vertices), curve_radius));
+    std::for_each(slider.points.cbegin(), slider.points.cend(), handle_point(std::back_inserter(curve_vertices), curve_radius));
 
     data.count_curve = static_cast<int>(curve_vertices.size());
     data.curve_vao = verts_to_vao(curve_vertices);
 
-    // Make bounds square and fix proportions
-    const auto [min_dist, max_dist] = std::minmax(data.x_bounds.y - data.x_bounds.x, data.y_bounds.y - data.y_bounds.x);
-    const auto missing = (max_dist - min_dist);
-    if(min_dist == data.x_bounds.y - data.x_bounds.x) {
-        data.x_bounds.y += missing / 2;
-        data.x_bounds.x -= missing / 2;
-    } else if(min_dist == data.y_bounds.y - data.y_bounds.x) {
-        data.y_bounds.y += missing / 2;
-        data.y_bounds.x -= missing / 2;
-    }
-
     return data;
 }
+
+auto get_slider(std::string_view slider_string)
+{
+    const auto slider_tokens = osu::split(slider_string, ',');
+    auto slider = parse_slider(slider_tokens).value();
+
+    if(slider.segments.empty() || slider.segments.front().points.empty()) throw std::runtime_error{"Empty slider"};
+
+    slider.points = sliderpath(slider);
+    slider.distances = pathlengths(slider.points);
+
+    return slider;
+}
+
+auto get_slider_bounds(const osu::Slider& slider)
+{
+    struct Bounds {
+        float min_x, min_y, max_x, max_y;
+    };
+    Bounds bounds{};
+    bounds.min_x = bounds.max_x = slider.segments.front().points.front().x;
+    bounds.min_y = bounds.max_y = slider.segments.front().points.front().y;
+    for(const auto& p : slider.points) {
+        if(p.x < bounds.min_x) bounds.min_x = p.x;
+        if(p.x > bounds.max_x) bounds.max_x = p.x;
+        if(p.y < bounds.min_y) bounds.min_y = p.y;
+        if(p.y > bounds.max_y) bounds.max_y = p.y;
+    }
+    for(const auto& segment : slider.segments) {
+        for(const auto& p : segment.points) {
+            if(p.x < bounds.min_x) bounds.min_x = p.x;
+            if(p.x > bounds.max_x) bounds.max_x = p.x;
+            if(p.y < bounds.min_y) bounds.min_y = p.y;
+            if(p.y > bounds.max_y) bounds.max_y = p.y;
+        }
+    }
+
+    bounds.min_x -= 1;
+    bounds.max_x += 1;
+    bounds.min_y -= 1;
+    bounds.max_y += 1;
+
+    // Make bounds square and fix proportions
+    const auto [min_dist, max_dist] = std::minmax(bounds.max_x - bounds.min_x, bounds.max_y - bounds.min_y);
+    const auto missing = (max_dist - min_dist);
+    if(min_dist == bounds.max_x - bounds.min_x) {
+        bounds.max_x += missing / 2;
+        bounds.min_x -= missing / 2;
+    } else if(min_dist == bounds.max_y - bounds.min_y) {
+        bounds.max_y += missing / 2;
+        bounds.min_y -= missing / 2;
+    }
+    return bounds;
+}
+
+auto update_slider(osu::Slider& slider)
+{
+    slider.points = sliderpath(slider);
+    slider.distances = pathlengths(slider.points);
+    osu::fix_slider_length(slider);
+}
+
 
 constexpr const auto tests_data = std::array{
         std::pair{"catmull", "272,71,214160,6,0,C|243:81|165:10|116:24,1,192,14|0,0:1|0:2,0:0:0:0:"},
@@ -171,6 +229,7 @@ int main(int arc, char* argv[])
         for([[maybe_unused]] const auto [test, test_data] : tests_data) {
             std::cout << "\t- " << test << '\n';
         }
+        std::cout << "Once test is running, visualise point order by pressing up and down arrows\n";
         return 0;
     }
     const char* slider_string = argv[1];
@@ -207,7 +266,6 @@ int main(int arc, char* argv[])
         std::cout << "Failed to initialize GLAD\n";
         return -1;
     }
-
 
     // build and compile our shader program
 
@@ -260,13 +318,37 @@ int main(int arc, char* argv[])
         glUniform4f(loc, color[0], color[1], color[2], color[3]);
     };
 
-    const auto data = generate_data(slider_string);
+    auto slider = get_slider(slider_string);
+    const auto orig_length = slider.length;
 
-    glm::mat4 projection = glm::ortho(data.x_bounds.x, data.x_bounds.y, data.y_bounds.y, data.y_bounds.x);
+    auto update_size = 0.f;
+    auto last_time = glfwGetTime();
+    const auto max_size = std::max(pathlengths(sliderpath(slider)).back(), slider.length);
+
+    // Get max boundaries for field and set ortho matrix
+    slider.length = max_size;
+    update_slider(slider);
+    const auto bounds = get_slider_bounds(slider);
+    glm::mat4 projection = glm::ortho(bounds.min_x, bounds.max_x, bounds.max_y, bounds.min_y);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_FALSE, glm::value_ptr(projection));
+
+    slider.length = orig_length;
+    update_slider(slider);
 
     while(glfwWindowShouldClose(window) == 0) {
         processInput(window);
+
+        const auto frame_time = glfwGetTime() - last_time;
+        last_time = glfwGetTime();
+
+        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) update_size += static_cast<float>(100. * frame_time);
+        if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) { update_size -= static_cast<float>(100. * frame_time); }
+
+        slider.length += static_cast<float>(update_size * frame_time);
+        if(slider.length > max_size || slider.length < 0) update_size = -update_size;
+
+        update_slider(slider);
+        const auto data = generate_data(slider);
 
         glClearColor(0.f, 0.f, 0.f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -274,11 +356,11 @@ int main(int arc, char* argv[])
         glUseProgram(shaderProgram);
 
         set_color(curve_color);
-        glBindVertexArray(data.curve_vao);
+        glBindVertexArray(data.curve_vao.vao);
         glDrawArrays(GL_TRIANGLES, 0, data.count_curve);
 
         set_color(control_color);
-        glBindVertexArray(data.control_vao);
+        glBindVertexArray(data.control_vao.vao);
         glDrawArrays(GL_TRIANGLES, 0, data.count_control);
 
 
@@ -286,8 +368,6 @@ int main(int arc, char* argv[])
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &data.control_vao);
-    glDeleteVertexArrays(1, &data.curve_vao);
     glDeleteProgram(shaderProgram);
 
     glfwTerminate();
