@@ -50,5 +50,5 @@ jobs:
         CXX: g++-9
         CC: gcc-9
       shell: bash
-      run: python3 -m pip install --upgrade wheel setuptools && python3 setup.py install && python3 -m unittest tests/python_bindings_test.py
+      run: python3 -m pip install --upgrade wheel setuptools && python3 -m pip install -e . && python3 -m unittest tests/python_bindings_test.py
       
