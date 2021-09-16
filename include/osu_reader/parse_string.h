@@ -16,6 +16,7 @@ namespace osu {
     }
 
     // TODO: remove these when floating point from_chars is more widely supported
+    // TODO: stof and co can throw
     template<>
     inline void parse_value<>(std::string_view value_string, float& value)
     {
