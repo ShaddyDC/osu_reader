@@ -59,7 +59,7 @@ bool osu::Replay_reader::read_type(std::string& value)
 
     const auto length = *length_opt;
     //        value.resize(length);
-    const auto bytes = std::visit([length](auto& p) { return p.template read_bytes(length); }, *provider);
+    const auto bytes = std::visit([length](auto& p) { return p.read_bytes(length); }, *provider);
     if(!bytes) return false;
     value = std::string{bytes->begin(), bytes->end()};
     return true;
@@ -86,7 +86,7 @@ bool osu::Replay_reader::read_replaydata(std::vector<char>& value)
     if(!compressed_size_opt) return false;
 
     const auto compressed_size = *compressed_size_opt;
-    const auto data = std::visit([compressed_size](auto& p) { return p.template read_bytes(compressed_size); }, *provider);
+    const auto data = std::visit([compressed_size](auto& p) { return p.read_bytes(compressed_size); }, *provider);
     if(!data) return false;
     value = *data;
     return true;
