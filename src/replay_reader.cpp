@@ -9,7 +9,7 @@ std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::
     std::ifstream file{file_path, std::ios::binary};
     if(!file.is_open()) return std::nullopt;
 
-    provider.emplace(Binary_reader<std::ifstream>{file});
+    provider = std::make_unique<Binary_file_reader>(file);
 
     auto replay = parse_replay();
     if(!replay) return std::nullopt;
@@ -23,7 +23,7 @@ std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::
 
 std::optional<osu::Replay> osu::Replay_reader::from_string(std::string_view content)
 {
-    provider = Binary_reader<std::string_view>{content};
+    provider = std::make_unique<Binary_string_reader>(content);
 
     auto replay = parse_replay();
     if(!replay) return std::nullopt;
@@ -47,19 +47,20 @@ std::optional<osu::Replay> osu::Replay_reader::parse_replay()
 
 bool osu::Replay_reader::read_type(std::string& value)
 {
-    const auto type = std::visit([](auto& p) { return p.template read_type<uint8_t>(); }, *provider);
-    if(type.value_or(0) == 0) {
+    uint8_t type;
+    const auto res = read_type(type);
+    if(!res or type == 0) {
         value = "";
         return true;
     }
 
-    if(*type != 0x0b) return false;
+    if(type != 0x0b) return false;
     const auto length_opt = read_uleb128();
     if(!length_opt) return false;
 
     const auto length = *length_opt;
     //        value.resize(length);
-    const auto bytes = std::visit([length](auto& p) { return p.read_bytes(length); }, *provider);
+    const auto bytes = provider->read_bytes(length);
     if(!bytes) return false;
     value = std::string{bytes->begin(), bytes->end()};
     return true;
@@ -82,11 +83,11 @@ std::optional<int> osu::Replay_reader::read_uleb128()
 
 bool osu::Replay_reader::read_replaydata(std::vector<char>& value)
 {
-    const auto compressed_size_opt = std::visit([](auto& p) { return p.template read_type<int32_t>(); }, *provider);
-    if(!compressed_size_opt) return false;
+    int32_t compressed_size = 0;
+    const auto success = read_type(compressed_size);
+    if(!success) return false;
 
-    const auto compressed_size = *compressed_size_opt;
-    const auto data = std::visit([compressed_size](auto& p) { return p.read_bytes(compressed_size); }, *provider);
+    const auto data = provider->read_bytes(compressed_size);
     if(!data) return false;
     value = *data;
     return true;
@@ -94,9 +95,10 @@ bool osu::Replay_reader::read_replaydata(std::vector<char>& value)
 
 bool osu::Replay_reader::read_type(Gamemode& value)
 {
-    const auto value_opt = std::visit([](auto& p) { return p.template read_type<uint8_t>(); }, *provider);
-    if(!value_opt) return false;
-    value = static_cast<Gamemode>(*value_opt);
+    std::underlying_type<Gamemode>::type v = {};
+    const auto success = read_type(v);
+    if(!success) return false;
+    value = static_cast<Gamemode>(v);
     return true;
 }
 
@@ -105,9 +107,13 @@ bool osu::Replay_reader::read_type(std::chrono::time_point<std::chrono::nanoseco
     using Ticks = std::chrono::duration<int64_t,
                                         std::ratio_multiply<std::ratio<100>, std::nano>>;
 
-    const auto value_opt = std::visit([](auto& p) { return p.template read_type<uint64_t>(); }, *provider);
-    if(!value_opt) return false;
-    value = std::chrono::time_point<std::chrono::nanoseconds>{Ticks{*value_opt}};
+    uint64_t v = {};
+    const auto success = read_type(v);
+
+    if(!success) return false;
+
+    // (sys_days{1970_y/jan/1} - sys_days{0001_y/jan/1} = 621355968000000000
+    value = std::chrono::time_point<std::chrono::nanoseconds>{Ticks{v - 621355968000000000}};
     return true;
 }
 std::optional<std::string> osu::Replay_reader::lzma_decode(std::vector<char>& compressed)

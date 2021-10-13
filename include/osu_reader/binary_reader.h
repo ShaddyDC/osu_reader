@@ -5,68 +5,47 @@
 #include <vector>
 
 namespace osu {
-    template<typename Provider>
-    class Binary_reader {
+    class IBinary_reader {
+    public:
+        virtual bool read_bytes(char* buffer, int size) = 0;
+
+        std::optional<std::vector<char>> read_bytes(int size)
+        {
+            std::vector<char> buffer(size);
+            if(read_bytes(buffer.data(), size))
+                return buffer;
+            return std::nullopt;
+        }
     };
 
-    template<>
-    class Binary_reader<std::ifstream> {
+    class Binary_file_reader : public IBinary_reader {
     public:
-        explicit Binary_reader(std::ifstream& input) : input{input} {}
+        explicit Binary_file_reader(std::ifstream& input) : input{input} {}
 
-        template<typename Type>
-        [[nodiscard]] std::optional<Type> read_type();
-        [[nodiscard]] std::optional<std::vector<char>> read_bytes(const int num);
+        bool read_bytes(char* buffer, int size) override
+        {
+            return static_cast<bool>(input.read(buffer, size));
+        }
 
     private:
         std::ifstream& input;
     };
 
-    template<typename Type>
-    inline std::optional<Type> Binary_reader<std::ifstream>::read_type()
-    {
-        Type value;
-        if(input.read(reinterpret_cast<char*>(&value), sizeof(value)))
-            return value;
-        return std::nullopt;
-    }
-
-    inline std::optional<std::vector<char>> Binary_reader<std::ifstream>::read_bytes(const int num)
-    {
-        std::vector<char> buffer(num);
-        if(input.read(buffer.data(), num))
-            return buffer;
-        return std::nullopt;
-    }
-
-    template<>
-    class Binary_reader<std::string_view> {
+    class Binary_string_reader : public IBinary_reader {
     public:
-        explicit Binary_reader(std::string_view input) : input{input} {}
+        explicit Binary_string_reader(std::string_view input) : input{input} {}
 
-        template<typename Type>
-        [[nodiscard]] std::optional<Type> read_type();
-        [[nodiscard]] std::optional<std::vector<char>> read_bytes(const int num);
+        bool read_bytes(char* buffer, int size) override
+        {
+            if(pos + size > static_cast<int>(input.size())) return false;
+
+            std::copy(input.begin() + pos, input.begin() + pos + size, buffer);
+            pos += size;
+            return true;
+        }
 
     private:
         std::string_view input;
-        int index = 0;
+        int pos = 0;
     };
-
-    template<typename Type>
-    inline std::optional<Type> Binary_reader<std::string_view>::read_type()
-    {
-        if(index + sizeof(Type) > input.size()) return std::nullopt;
-        Type value = *reinterpret_cast<const Type*>(&(input[index]));
-        index += sizeof(Type);
-        return value;
-    }
-
-    inline std::optional<std::vector<char>> Binary_reader<std::string_view>::read_bytes(const int num)
-    {
-        if(index + num > static_cast<int>(input.size())) return std::nullopt;
-        std::vector<char> buffer{input.begin() + index, input.begin() + index + num};
-        index += num;
-        return buffer;
-    }
 }// namespace osu

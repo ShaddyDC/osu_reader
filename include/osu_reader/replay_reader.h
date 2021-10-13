@@ -3,9 +3,9 @@
 #include "binary_reader.h"
 #include "parse_string.h"
 #include "string_stuff.h"
+#include <memory>
 #include <optional>
 #include <osu_reader/replay.h>
-#include <variant>
 
 namespace osu {
     class Replay_reader {
@@ -29,16 +29,15 @@ namespace osu {
         static std::optional<std::string> lzma_decode(std::vector<char>& compressed);
         static std::optional<std::vector<Replay::Replay_frame>> decode_frames(std::vector<char>& compressed);
 
-        std::optional<std::variant<Binary_reader<std::ifstream>, Binary_reader<std::string_view>>> provider = {};
+        std::unique_ptr<IBinary_reader> provider = nullptr;
     };
 
     template<typename Type>
     bool Replay_reader::read_type(Type& value)
     {
-        auto val = std::visit([](auto& p) { return p.template read_type<Type>(); }, *provider);
-        if(!val) return false;
-        value = val.value();
-        return true;
+        if(!provider) return false;
+
+        return provider->read_bytes(reinterpret_cast<char*>(&value), sizeof(value));
     }
 
 }// namespace osu
