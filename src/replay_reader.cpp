@@ -12,28 +12,14 @@ std::optional<osu::Replay> osu::Replay_reader::from_file(const std::filesystem::
 
     provider = std::make_unique<Binary_file_reader>(file);
 
-    auto replay = parse_replay();
-    if(!replay) return std::nullopt;
-
-    if(parse_frames) {
-        replay->frames = decode_frames(replay->replay_compressed);
-    }
-
-    return replay;
+    return parse_replay();
 }
 
 std::optional<osu::Replay> osu::Replay_reader::from_string(std::string_view content)
 {
     provider = std::make_unique<Binary_string_reader>(content);
 
-    auto replay = parse_replay();
-    if(!replay) return std::nullopt;
-
-    if(parse_frames) {
-        replay->frames = decode_frames(replay->replay_compressed);
-    }
-
-    return replay;
+    return parse_replay();
 }
 std::optional<osu::Replay> osu::Replay_reader::parse_replay()
 {
@@ -43,6 +29,11 @@ std::optional<osu::Replay> osu::Replay_reader::parse_replay()
             read_type(replay.mode) && read_type(replay.game_version) && read_type(replay.map_hash) && read_type(replay.player_name) && read_type(replay.replay_hash) && read_type(replay.count_300) && read_type(replay.count_100) && read_type(replay.count_50) && read_type(replay.count_geki) && read_type(replay.count_katsu) && read_type(replay.count_miss) && read_type(replay.score) && read_type(replay.max_combo) && read_type(replay.full_combo) && read_type(replay.mods) && read_type(replay.life_bar) && read_type(replay.time_stamp) && read_replaydata(replay.replay_compressed) && read_type(replay.score_id);
 
     if(!success) return std::nullopt;
+
+    if(parse_frames) {
+        replay.frames = decode_frames(replay.replay_compressed);
+    }
+
     return replay;
 }
 
