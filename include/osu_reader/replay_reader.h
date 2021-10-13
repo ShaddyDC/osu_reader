@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binary_reader.h"
+#include "binary_reader_interface.h"
 #include "parse_string.h"
 #include "string_stuff.h"
 #include <memory>
