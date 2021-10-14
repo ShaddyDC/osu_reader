@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace osu {
-    enum Mods : std::uint32_t {
+    enum class Mods : std::uint32_t {
         None = 0,
         NoFail = 1 << 0,
         Easy = 1 << 1,

@@ -38,7 +38,7 @@ TEST_CASE("cptnXn_fdfd")
         CHECK(r.score == 116845640);
         CHECK(r.max_combo == 2384);
         CHECK(r.full_combo == false);
-        CHECK(r.mods == 0);
+        CHECK(static_cast<int>(r.mods) == 0);
         //    REQUIRE(r.life_bar == "");
         //    REQUIRE(r.time_stamp == 0);
         CHECK(r.score_id == 1740197996);
