@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace osu {
-    enum Mods : uint32_t {
+    enum Mods : std::uint32_t {
         None = 0,
         NoFail = 1 << 0,
         Easy = 1 << 1,
@@ -52,7 +52,7 @@ namespace osu {
         };
 
         Gamemode mode;
-        int game_version;
+        std::uint32_t game_version;
         std::string map_hash;
         std::string player_name;
         std::string replay_hash;
@@ -62,7 +62,7 @@ namespace osu {
         std::uint16_t count_geki;
         std::uint16_t count_katsu;
         std::uint16_t count_miss;
-        int score;
+        std::uint32_t score;
         std::uint16_t max_combo;
         bool full_combo;
         Mods mods;
