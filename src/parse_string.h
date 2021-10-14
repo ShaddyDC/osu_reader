@@ -1,7 +1,7 @@
 #pragma once
 
 #include "osu_reader/beatmap.h"
-#include "string_stuff.h"
+#include "osu_reader/string_stuff.h"
 #include <charconv>
 #include <chrono>
 #include <filesystem>

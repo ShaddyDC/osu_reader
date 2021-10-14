@@ -1,5 +1,7 @@
 #include "osu_reader/replay_reader.h"
 #include "binary_reader.h"
+#include "osu_reader/string_stuff.h"
+#include "parse_string.h"
 
 #ifdef ENABLE_LZMA
 #include <lzma.h>

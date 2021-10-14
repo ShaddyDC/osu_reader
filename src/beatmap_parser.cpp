@@ -1,6 +1,6 @@
 #include "osu_reader/beatmap_parser.h"
 #include "hitobject/parse_hitobject.h"
-#include "osu_reader/parse_string.h"
+#include "parse_string.h"
 #include "timingpoints_helper.h"
 #include "util.h"
 #include <fstream>
