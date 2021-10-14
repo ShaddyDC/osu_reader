@@ -49,7 +49,7 @@ class ReplayTest(unittest.TestCase):
             self.assertEqual(r.score, 116845640)
             self.assertEqual(r.max_combo, 2384)
             self.assertEqual(r.full_combo, False)
-            self.assertEqual(r.mods, 0)
+            self.assertEqual(r.mods, pyshosu.Mods.Empty)
             self.assertEqual(r.score_id, 1740197996)
             self.assertEqual(len(r.frames), 21188)
 
