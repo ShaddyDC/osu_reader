@@ -9,34 +9,53 @@
 
 std::optional<osu::Beatmap> osu::Beatmap_parser::from_file(const std::filesystem::path& file_path)
 {
+    class File_line_provider : public Line_provider {
+    public:
+        explicit File_line_provider(std::ifstream& file) : file{file} {}
+        inline std::optional<std::string> get_line() override
+        {
+            std::string line;
+            if(!std::getline(file, line)) return std::nullopt;
+            return line;
+        }
+
+    private:
+        std::ifstream& file;
+    };
+
     std::ifstream file{file_path};
     if(!file.is_open()) return std::nullopt;
 
-    const auto line_provider = [&file]() -> std::optional<std::string> {
-        std::string line;
-        if(!std::getline(file, line)) return std::nullopt;
-        return line;
-    };
+    auto provider = File_line_provider(file);
 
-    return parse_impl(line_provider);
+    return parse_impl(provider);
 }
 
 std::optional<osu::Beatmap> osu::Beatmap_parser::from_string(const std::string_view beatmap_content)
 {
-    std::size_t last_pos = 0;
+    class String_line_provider : public Line_provider {
+    public:
+        explicit String_line_provider(std::string_view content) : content{content} {}
+        inline std::optional<std::string> get_line() override
+        {
+            if(last_pos == std::string_view::npos || last_pos >= content.size()) return std::nullopt;
 
-    const auto line_provider = [&beatmap_content, &last_pos]() -> std::optional<std::string> {
-        if(last_pos == std::string_view::npos || last_pos >= beatmap_content.size()) return std::nullopt;
+            const auto start_pos = last_pos;
 
-        const auto pos = beatmap_content.find('\n', last_pos);
-        const auto tmp_pos = last_pos;
+            const auto pos = content.find('\n', last_pos);
+            last_pos = (pos == std::string_view::npos) ? content.size() : pos + 1;
 
-        last_pos = std::min(pos, beatmap_content.size() - 1) + 1;
+            return std::string{content.substr(start_pos, last_pos - start_pos)};
+        }
 
-        return std::string{beatmap_content.substr(tmp_pos, pos - tmp_pos)};
+    private:
+        std::string_view content;
+        std::size_t last_pos = 0;
     };
 
-    return parse_impl(line_provider);
+    auto provider = String_line_provider(beatmap_content);
+
+    return parse_impl(provider);
 }
 
 using Beatmap_types = std::variant<int osu::Beatmap::*, float osu::Beatmap::*, bool osu::Beatmap::*,
@@ -291,9 +310,9 @@ void osu::Beatmap_parser::parse_line(const std::string_view line)
         parse_hitobject(line);
 }
 
-std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<std::optional<std::string>()>& line_provider)
+std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(Line_provider& line_provider)
 {
-    std::optional<std::string> line = line_provider();
+    auto line = line_provider.get_line();
 
     if(!line) return std::nullopt;
 
@@ -313,7 +332,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<
                pos != std::string::npos) {
                 return pos + version_prefix.length();
             }
-            line = line_provider();
+            line = line_provider.get_line();
         } while(line);
         return std::string::npos;
     };
@@ -334,13 +353,13 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(const std::function<
         }
     }
 
-    line = line_provider();
+    line = line_provider.get_line();
     while(line) {
         format_utf16(*line);
         trim(*line);
 
         parse_line(*line);
-        line = line_provider();
+        line = line_provider.get_line();
     }
 
     return std::move(beatmap_);

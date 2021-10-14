@@ -1,10 +1,17 @@
 #pragma once
 #include "osu_reader/beatmap.h"
 #include <functional>// TODO: Reconsider include necessity
-#include <optional>
+#include <memory>
 
 namespace osu {
     class Beatmap_parser {
+        class Line_provider {
+        public:
+            // TODO: Use string_view
+            virtual std::optional<std::string> get_line() = 0;
+            virtual ~Line_provider() = default;
+        };
+
     public:
         // disable copies because of iterator
         Beatmap_parser() = default;
@@ -30,7 +37,7 @@ namespace osu {
             none
         };
 
-        std::optional<Beatmap> parse_impl(const std::function<std::optional<std::string>()>& line_provider);
+        std::optional<Beatmap> parse_impl(Line_provider& line_provider);
 
         void parse_general(std::string_view line);
         void parse_editor(std::string_view line);
