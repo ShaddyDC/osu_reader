@@ -12,15 +12,15 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::from_file(const std::filesystem
     class File_line_provider : public Line_provider {
     public:
         explicit File_line_provider(std::ifstream& file) : file{file} {}
-        inline std::optional<std::string> get_line() override
+        inline std::optional<std::string_view> get_line() override
         {
-            std::string line;
             if(!std::getline(file, line)) return std::nullopt;
             return line;
         }
 
     private:
         std::ifstream& file;
+        std::string line = {};
     };
 
     std::ifstream file{file_path};
@@ -36,7 +36,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::from_string(const std::string_v
     class String_line_provider : public Line_provider {
     public:
         explicit String_line_provider(std::string_view content) : content{content} {}
-        inline std::optional<std::string> get_line() override
+        inline std::optional<std::string_view> get_line() override
         {
             if(last_pos == std::string_view::npos || last_pos >= content.size()) return std::nullopt;
 
@@ -45,7 +45,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::from_string(const std::string_v
             const auto pos = content.find('\n', last_pos);
             last_pos = (pos == std::string_view::npos) ? content.size() : pos + 1;
 
-            return std::string{content.substr(start_pos, last_pos - start_pos)};
+            return content.substr(start_pos, last_pos - start_pos);
         }
 
     private:
@@ -319,10 +319,14 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(Line_provider& line_
     beatmap_ = Beatmap{};// Clear beatmap
 
     const auto format_utf16 = maybe_parse_utfheader(*line)
-                                      ? [](std::string& s) {
-                                            s.erase(std::remove(s.begin(), s.end(), '\0'), s.end());
+                                      ? [](std::string_view& s) {
+                                            // We use a local buffer for the line without '\0' values and point the view to that
+                                            static std::string line;
+                                            line.clear();
+                                            std::remove_copy(s.begin(), s.end(), std::back_inserter(line), '\0');
+                                            s = line;
                                         }
-                                      : [](std::string&) {};
+                                      : [](std::string_view&) {};// Not utf16, no handling necessary
 
     const auto seek_version_string = [&] {
         const std::string_view version_prefix = "osu file format v";
@@ -356,7 +360,7 @@ std::optional<osu::Beatmap> osu::Beatmap_parser::parse_impl(Line_provider& line_
     line = line_provider.get_line();
     while(line) {
         format_utf16(*line);
-        trim(*line);
+        *line = trim_view(*line);
 
         parse_line(*line);
         line = line_provider.get_line();

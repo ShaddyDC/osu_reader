@@ -7,8 +7,7 @@ namespace osu {
     class Beatmap_parser {
         class Line_provider {
         public:
-            // TODO: Use string_view
-            virtual std::optional<std::string> get_line() = 0;
+            virtual std::optional<std::string_view> get_line() = 0;
             virtual ~Line_provider() = default;
         };
 
