@@ -15,5 +15,7 @@ namespace osu {
                 return buffer;
             return std::nullopt;
         }
+
+        virtual ~IBinary_reader() = default;
     };
 }// namespace osu
