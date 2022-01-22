@@ -3,6 +3,7 @@
 #include "parse_string.h"
 #include "timingpoints_helper.h"
 #include "util.h"
+#include <array>
 #include <fstream>
 #include <osu_reader/sliderpath.h>
 #include <variant>
