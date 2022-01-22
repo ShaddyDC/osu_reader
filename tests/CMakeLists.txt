@@ -18,6 +18,7 @@ add_executable(osuReaderTests src/main.cpp
         src/replay_cptnXn_fdfd.cpp
         src/slider_parsing.cpp
         src/beatmap_hitobj_it.cpp
+        src/replay_util.cpp
         )
 
 target_link_libraries(osuReaderTests

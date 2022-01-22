@@ -72,4 +72,12 @@ namespace osu {
         std::optional<std::vector<Replay_frame>> frames;
         std::int64_t score_id;
     };
+
+    static inline Mods operator|(Mods a, Mods b) { return static_cast<Mods>(static_cast<int>(a) | static_cast<int>(b)); }
+    static inline Mods operator&(Mods a, Mods b) { return static_cast<Mods>(static_cast<int>(a) & static_cast<int>(b)); }
+
+    static inline bool has_mods(const Mods used, const Mods test)
+    {
+        return (used & test) == test;
+    }
 }// namespace osu
