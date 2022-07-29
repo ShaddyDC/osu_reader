@@ -2,6 +2,7 @@
 #include "bezier.h"
 #include "catmull.h"
 #include "perfect_circle.h"
+#include <algorithm>
 
 // Heavily inspired by https://github.com/ppy/osu-framework/blob/99786238a02e0d6b69da86dd52e5506ee8ec0566/osu.Framework/Utils/PathApproximator.cs
 
@@ -30,7 +31,19 @@ std::vector<osu::Vector2> osu::sliderpath(const osu::Slider& slider)
             // Maybe log in the future?
             return segment.points;
         }(segment);
+
         path.insert(path.end(), points.begin(), points.end());
+    }
+
+    // Remove duplicates
+    path.erase(std::unique(path.begin(), path.end()), path.end());
+
+    // Erase multiple points in same direction
+    for(auto it = path.cbegin(); it != path.cend(); ++it) {
+        if(normal(*(it - 2) - *(it - 1)) == normal(*(it - 1) - *it)) {
+            // erase invalidates later iterators, so reassign
+            it = path.erase(it - 1);
+        }
     }
 
     return path;

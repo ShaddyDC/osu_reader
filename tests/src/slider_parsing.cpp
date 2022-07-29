@@ -230,3 +230,17 @@ TEST_CASE("Butterfly length")
 
     CHECK(slider->length == slider->distances.back());
 }
+
+TEST_CASE("Point cleanup")
+{
+    const auto slider_string = "1,1,50000,2,0,B|0:0|0:0|10:0|10:0|100:0|100:0,7,100";
+    const auto slider_tokens = osu::split(slider_string, ',');
+    auto slider = parse_slider(slider_tokens);
+    slider->points = osu::sliderpath(slider.value());
+    slider->distances = osu::pathlengths(slider->points);
+    osu::fix_slider_length(*slider);
+
+    CHECK(slider->points.size() == 2);
+    CHECK(slider->points.front() == osu::Vector2{0, 0});
+    CHECK(slider->points.back() == osu::Vector2{0, 100});
+}
